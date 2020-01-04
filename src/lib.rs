@@ -49,10 +49,12 @@ extern crate bitflags;
 extern crate serde_derive;
 #[cfg(feature = "serialize")]
 extern crate serde;
-#[cfg(feature = "nalgebra")]
-extern crate nalgebra;
+
+// todo use this???
 #[cfg(feature = "cgmath")]
 extern crate cgmath;
+
+extern crate chipmunk_port;
 
 mod ffi;
 #[doc(hidden)]
@@ -97,3 +99,5 @@ pub mod b2 {
 
 
 mod clib;
+//mod test_box2d;
+mod test_chipmunk;

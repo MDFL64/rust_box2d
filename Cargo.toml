@@ -36,11 +36,16 @@ vec_map = "^0.8"
 bitflags = "^0.9"
 serde = { version = "^1.0", optional = true }
 serde_derive = { version = "^1.0", optional = true }
-cgmath = { version = "^0.14", optional = true }
-nalgebra = { version = "^0.10", optional = true }
+#cgmath = { version = "^0.14", optional = true }
+#nalgebra = { version = "^0.10", optional = true }
+
+chipmunk-port = { path = "../../chipmunk-port" }
 
 [dev-dependencies]
 approx = "^0.1"
 
 [lib]
 crate-type = ["cdylib"]
+
+[profile.release]
+lto = true
