@@ -27,7 +27,7 @@ serialize = ["serde", "serde_derive"]
 default = []
 
 [build-dependencies]
-cc = "^1.0"
+cc = "1.0.48"
 cmake = "^0.1"
 
 [dependencies]
@@ -41,3 +41,6 @@ nalgebra = { version = "^0.10", optional = true }
 
 [dev-dependencies]
 approx = "^0.1"
+
+[lib]
+crate-type = ["cdylib"]

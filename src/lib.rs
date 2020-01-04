@@ -38,6 +38,8 @@
 //! let fixture = body.fixture(handle);
 //! ```
 
+#![allow(warnings)]
+
 extern crate libc;
 extern crate vec_map;
 #[macro_use]
@@ -92,3 +94,6 @@ pub mod b2 {
                                WheelJoint, WheelJointDef, JointType, LimitState, UnknownJoint,
                                Joint, JointDef};
 }
+
+
+mod clib;

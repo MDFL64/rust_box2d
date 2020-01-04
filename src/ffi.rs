@@ -1,4 +1,4 @@
-use libc::c_void;
+use std::ffi::c_void;
 use std::ptr;
 
 pub type Any = *mut c_void;
