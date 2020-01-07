@@ -89,3 +89,24 @@ unsafe extern "C" fn get_body_coord(world: i32, n: i32, c: i32) -> f32 {
 
     return coord;
 }
+
+#[no_mangle]
+unsafe extern "C" fn get_profile(world: i32, n: i32) -> f32 {
+    let ptr = world as *mut TestWorld;
+    let profile = (*ptr).world.profile();
+    let array = std::slice::from_raw_parts(profile as (*const b2::Profile) as (*const f32), 8);
+    return array[n as usize];
+}
+
+/*
+pub struct Profile {
+    pub step: f32,          Whole Step
+    pub collide: f32,           - Query BP for Contacts
+    pub solve: f32,             - Solve
+    pub solve_init: f32,            - Solve Init
+    pub solve_velocity: f32,        - Solve Velocity
+    pub solve_position: f32,        - Solve Position
+    pub broad_phase: f32,           - (Sync Broadphase, Find New Contacts)
+    pub solve_toi: f32,         - SolveTOI
+}
+*/

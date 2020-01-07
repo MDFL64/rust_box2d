@@ -99,5 +99,5 @@ pub mod b2 {
 
 
 mod clib;
-//mod test_box2d;
-mod test_chipmunk;
+mod test_box2d;
+//mod test_chipmunk;
