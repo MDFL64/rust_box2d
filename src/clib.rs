@@ -13,6 +13,12 @@ unsafe extern "C" fn malloc(size: i32) -> i32 {
 }
 
 #[no_mangle]
+unsafe extern "C" fn free(ptr: i32) {
+    let layout = std::alloc::Layout::from_size_align_unchecked(0,0);
+    std::alloc::dealloc(ptr as *mut u8, layout);
+}
+
+#[no_mangle]
 unsafe extern "C" fn _Znwm(size: i32) -> i32 {
     malloc(size)
 }
@@ -32,9 +38,6 @@ extern "C" {
     fn debug_info(x: i32) -> ();
 }
 
-extern "C" {
-    fn free(addr: i32);
-}
 /*
 #[no_mangle]
 unsafe extern "C" fn free(addr: i32) {
