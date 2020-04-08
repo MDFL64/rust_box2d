@@ -73,6 +73,8 @@ fn main() {
         .file("Box2D/Box2D/Box2D/Dynamics/Contacts/b2PolygonAndCircleContact.cpp")
         .file("Box2D/Box2D/Box2D/Dynamics/Contacts/b2PolygonContact.cpp")
 
+        .file("Box2D/Box2D/Box2D/Dynamics/Joints/b2Joint.cpp")
+
         // TODO JOINTS
 
         .compile("cbox2d");

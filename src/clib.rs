@@ -33,6 +33,10 @@ extern "C" fn __cxa_pure_virtual() {
     panic!("pure virtual call");
 }
 
+#[no_mangle]
+extern "C" fn perf_now() -> f64 {
+    return 0.0;
+}
 
 extern "C" {
     fn debug_info(x: i32) -> ();

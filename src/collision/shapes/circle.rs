@@ -13,7 +13,7 @@ impl CircleShape {
         unsafe { CircleShape::from_ffi(ffi::CircleShape_new()) }
     }
 
-    pub fn new_with(position: Vec2, radius: f32) -> Self {
+    pub fn new_with(position: &Vec2, radius: f32) -> Self {
         let mut circle = Self::new();
         circle.set_position(position);
         circle.set_radius(radius);
@@ -52,7 +52,7 @@ impl CircleShape {
         unsafe { ffi::CircleShape_get_pos(self.ptr()) }
     }
 
-    pub fn set_position(&mut self, pos: Vec2) {
+    pub fn set_position(&mut self, pos: &Vec2) {
         unsafe { ffi::CircleShape_set_pos(self.mut_ptr(), pos) }
     }
 }
@@ -83,6 +83,6 @@ pub mod ffi {
         pub fn CircleShape_get_vertex_count(slf: *const CircleShape) -> i32;
         pub fn CircleShape_get_vertex(slf: *const CircleShape, index: i32) -> *const Vec2;
         pub fn CircleShape_get_pos(slf: *const CircleShape) -> Vec2;
-        pub fn CircleShape_set_pos(slf: *mut CircleShape, pos: Vec2);
+        pub fn CircleShape_set_pos(slf: *mut CircleShape, pos: &Vec2);
     }
 }
