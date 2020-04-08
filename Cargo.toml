@@ -39,13 +39,13 @@ serde_derive = { version = "^1.0", optional = true }
 #cgmath = { version = "^0.14", optional = true }
 #nalgebra = { version = "^0.10", optional = true }
 
-chipmunk-port = { path = "../../chipmunk-port" }
+#chipmunk-port = { path = "../../chipmunk-port" }
 
 [dev-dependencies]
 approx = "^0.1"
 
-[lib]
-crate-type = ["cdylib"]
+#[lib]
+#crate-type = ["cdylib"]
 
 [profile.release]
 lto = true

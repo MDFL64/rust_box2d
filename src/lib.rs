@@ -54,7 +54,7 @@ extern crate serde;
 #[cfg(feature = "cgmath")]
 extern crate cgmath;
 
-extern crate chipmunk_port;
+//extern crate chipmunk_port;
 
 mod ffi;
 #[doc(hidden)]
@@ -99,5 +99,5 @@ pub mod b2 {
 
 
 mod clib;
-mod test_box2d;
+//mod test_box2d;
 //mod test_chipmunk;
