@@ -1,10 +1,10 @@
 
-#[no_mangle]
+/*#[no_mangle]
 extern "C" fn assert(x: i32) {
     if x==0 {
         panic!("assert failed");
     }
-}
+}*/
 
 #[no_mangle]
 unsafe extern "C" fn malloc(size: i32) -> i32 {
