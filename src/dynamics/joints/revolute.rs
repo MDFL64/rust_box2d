@@ -131,8 +131,8 @@ impl RevoluteJoint {
         unsafe { ffi::RevoluteJoint_get_max_motor_torque(self.ptr()) }
     }
 
-    pub fn motor_torque(&self) -> f32 {
-        unsafe { ffi::RevoluteJoint_get_motor_torque(self.ptr()) }
+    pub fn motor_torque(&self, inv_dt: f32) -> f32 {
+        unsafe { ffi::RevoluteJoint_get_motor_torque(self.ptr(), inv_dt) }
     }
 
     pub fn enable_limit(&mut self, flag: bool) {
@@ -198,6 +198,6 @@ pub mod ffi {
         pub fn RevoluteJoint_get_motor_speed(slf: *const RevoluteJoint) -> f32;
         pub fn RevoluteJoint_set_max_motor_torque(slf: *mut RevoluteJoint, torque: f32);
         pub fn RevoluteJoint_get_max_motor_torque(slf: *const RevoluteJoint) -> f32;
-        pub fn RevoluteJoint_get_motor_torque(slf: *const RevoluteJoint) -> f32;
+        pub fn RevoluteJoint_get_motor_torque(slf: *const RevoluteJoint, inv_dt: f32) -> f32;
     }
 }

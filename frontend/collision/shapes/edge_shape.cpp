@@ -21,16 +21,16 @@ b2Vec2 EdgeShape_get_v1(const b2EdgeShape* self) {
     return self->m_vertex1;
 }
 
-void EdgeShape_set_v1(b2EdgeShape* self, b2Vec2 v1) {
-    self->m_vertex1 = v1;
+void EdgeShape_set_v1(b2EdgeShape* self, const b2Vec2* v1) {
+    self->m_vertex1 = *v1;
 }
 
 b2Vec2 EdgeShape_get_v2(const b2EdgeShape* self) {
     return self->m_vertex2;
 }
 
-void EdgeShape_set_v2(b2EdgeShape* self, b2Vec2 v2) {
-    self->m_vertex2 = v2;
+void EdgeShape_set_v2(b2EdgeShape* self, const b2Vec2* v2) {
+    self->m_vertex2 = *v2;
 }
 
 bool EdgeShape_get_v0(const b2EdgeShape* self, b2Vec2* v0) {

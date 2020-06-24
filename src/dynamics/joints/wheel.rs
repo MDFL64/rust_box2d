@@ -119,8 +119,8 @@ impl WheelJoint {
         unsafe { ffi::WheelJoint_get_max_motor_torque(self.ptr()) }
     }
 
-    pub fn motor_torque(&self) -> f32 {
-        unsafe { ffi::WheelJoint_get_motor_torque(self.ptr()) }
+    pub fn motor_torque(&self, inv_dt: f32) -> f32 {
+        unsafe { ffi::WheelJoint_get_motor_torque(self.ptr(), inv_dt) }
     }
 
     pub fn spring_frequency(&self) -> f32 {
@@ -188,7 +188,7 @@ pub mod ffi {
         pub fn WheelJoint_get_motor_speed(slf: *const WheelJoint) -> f32;
         pub fn WheelJoint_set_max_motor_torque(slf: *mut WheelJoint, torque: f32);
         pub fn WheelJoint_get_max_motor_torque(slf: *const WheelJoint) -> f32;
-        pub fn WheelJoint_get_motor_torque(slf: *const WheelJoint) -> f32;
+        pub fn WheelJoint_get_motor_torque(slf: *const WheelJoint, inv_dt: f32) -> f32;
         pub fn WheelJoint_set_spring_frequency(slf: *mut WheelJoint, frequency: f32);
         pub fn WheelJoint_get_spring_frequency(slf: *const WheelJoint) -> f32;
         pub fn WheelJoint_set_spring_damping_ratio(slf: *mut WheelJoint, ratio: f32);

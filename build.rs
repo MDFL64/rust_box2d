@@ -33,6 +33,7 @@ fn main() {
         .include("fake_sys_headers")
         .include("Box2D/Box2D")
         .file("frontend/lib.cpp")
+        .file("fake_sys_headers/printf.cpp")
 
         .file("Box2D/Box2D/Box2D/Common/b2BlockAllocator.cpp")
         .file("Box2D/Box2D/Box2D/Common/b2Math.cpp")

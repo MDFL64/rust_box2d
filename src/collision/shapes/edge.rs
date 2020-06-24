@@ -30,7 +30,7 @@ impl EdgeShape {
         unsafe { ffi::EdgeShape_get_v1(self.ptr()) }
     }
 
-    pub fn set_v1(&mut self, v1: Vec2) {
+    pub fn set_v1(&mut self, v1: &Vec2) {
         unsafe { ffi::EdgeShape_set_v1(self.mut_ptr(), v1) }
     }
 
@@ -38,7 +38,7 @@ impl EdgeShape {
         unsafe { ffi::EdgeShape_get_v2(self.ptr()) }
     }
 
-    pub fn set_v2(&mut self, v2: Vec2) {
+    pub fn set_v2(&mut self, v2: &Vec2) {
         unsafe { ffi::EdgeShape_set_v2(self.mut_ptr(), v2) }
     }
 
@@ -95,9 +95,9 @@ pub mod ffi {
         pub fn Shape_as_edge_shape(slf: *mut Shape) -> *mut EdgeShape;
         pub fn EdgeShape_set(slf: *mut EdgeShape, v1: *const Vec2, v2: *const Vec2);
         pub fn EdgeShape_get_v1(slf: *const EdgeShape) -> Vec2;
-        pub fn EdgeShape_set_v1(slf: *mut EdgeShape, v1: Vec2);
+        pub fn EdgeShape_set_v1(slf: *mut EdgeShape, v1: *const Vec2);
         pub fn EdgeShape_get_v2(slf: *const EdgeShape) -> Vec2;
-        pub fn EdgeShape_set_v2(slf: *mut EdgeShape, v2: Vec2);
+        pub fn EdgeShape_set_v2(slf: *mut EdgeShape, v2: *const Vec2);
         pub fn EdgeShape_get_v0(slf: *const EdgeShape, v0: &mut Vec2) -> bool;
         pub fn EdgeShape_set_v0(slf: *mut EdgeShape, v0: *const Vec2);
         pub fn EdgeShape_get_v3(slf: *const EdgeShape, v3: &mut Vec2) -> bool;
