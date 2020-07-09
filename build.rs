@@ -1,5 +1,4 @@
 extern crate cc;
-extern crate cmake;
 
 fn main() {
     /*println!("cargo:rustc-link-lib=static=Box2D");
