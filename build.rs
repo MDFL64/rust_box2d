@@ -27,7 +27,7 @@ fn main() {
         .flag("-fno-rtti")
         .cpp_link_stdlib(None)
         //.cpp_set_stdlib("c++")
-        .archiver("llvm-ar")
+        //.archiver("llvm-ar")
 
         .include("fake_sys_headers")
         .include("Box2D/Box2D")
