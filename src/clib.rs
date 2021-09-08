@@ -34,7 +34,9 @@ extern "C" fn __cxa_pure_virtual() {
 }
 
 #[no_mangle]
-extern "C" fn __cxa_atexit(func: usize, arg: usize, dso_handle: usize) -> i32 {}
+extern "C" fn __cxa_atexit(func: usize, arg: usize, dso_handle: usize) -> i32 {
+    0
+}
 
 #[no_mangle]
 extern "C" fn perf_now() -> f64 {
