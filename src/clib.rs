@@ -8,13 +8,13 @@ extern "C" fn assert(x: i32) {
 
 #[no_mangle]
 unsafe extern "C" fn malloc(size: i32) -> i32 {
-    let layout = std::alloc::Layout::from_size_align_unchecked(size as usize,0);
+    let layout = std::alloc::Layout::from_size_align_unchecked(size as usize,16);
     return std::alloc::alloc_zeroed( layout ) as i32;
 }
 
 #[no_mangle]
 unsafe extern "C" fn free(ptr: i32) {
-    let layout = std::alloc::Layout::from_size_align_unchecked(0,0);
+    let layout = std::alloc::Layout::from_size_align_unchecked(0,16);
     std::alloc::dealloc(ptr as *mut u8, layout);
 }
 
