@@ -119,7 +119,7 @@ where
                     test.step(&mut data, *dt as f32);
                 }
             }
-            Event::Loop(Loop::Render(args)) => {
+            Event::Loop(Loop::Render(_)) => {
                 let transform = data.camera.transform_world_to_gl(width, height);
 
                 window.draw_2d(&evnt, |c, g, _dev| {
