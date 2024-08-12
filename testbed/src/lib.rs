@@ -68,14 +68,13 @@ where
     window.set_max_fps(UPDATES_PER_SECOND);
     window.set_ups(UPDATES_PER_SECOND);
 
-    let mut running = false;
+    let mut running = true;
     let mut mouse_position = b2::Vec2 { x: 0., y: 0. };
     let mut grabbing = None;
 
     let dummy = data.world.create_body(&b2::BodyDef::new());
 
     while let Some(evnt) = window.next() {
-        let transform = data.camera.transform_world_to_gl();
         let window_to_gl = |w, h, x, y| {
             let scale_x = 2. / w as f64;
             let scale_y = 2. / h as f64;
@@ -83,7 +82,7 @@ where
         };
         let window_to_world = |w, h, camera: &Camera, x, y| {
             let (x, y) = window_to_gl(w, h, x, y);
-            camera.gl_to_world(x, y)
+            camera.gl_to_world(x, y, w, h)
         };
 
         match &evnt {
@@ -117,16 +116,21 @@ where
             }
             Event::Loop(Loop::Update(UpdateArgs { dt })) => {
                 if running {
+                    let t = std::time::Instant::now();
                     test.step(&mut data, *dt as f32);
+                    //println!("t = {:?}",t.elapsed());
                 }
+            }
+            Event::Loop(Loop::Render(args)) => {
+                let transform = data.camera.transform_world_to_gl(width, height);
+
+                window.draw_2d(&evnt, |c, g, _dev| {
+                    graphics::clear([0.1, 0.1, 0.1, 1.0], g);
+                    debug_draw(&mut data.world, data.draw_flags, transform, c, g);
+                });
             }
             _ => {}
         }
-
-        window.draw_2d(&evnt, |c, g, _dev| {
-            graphics::clear([0.3, 0.3, 0.3, 1.0], g);
-            debug_draw(&mut data.world, data.draw_flags, transform, c, g);
-        });
     }
 }
 

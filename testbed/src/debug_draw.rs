@@ -1,14 +1,16 @@
-use graphics::{Graphics, Context, Line, Ellipse, Polygon};
+use graphics::{Context, Ellipse, Graphics, Line, Polygon};
 use wrapped2d::b2;
 use wrapped2d::user_data::UserDataTypes;
 
-pub fn debug_draw<U, G>(world: &mut b2::World<U>,
-                        flags: b2::DrawFlags,
-                        transform: [[f64; 3]; 2],
-                        c: Context,
-                        g: &mut G)
-    where U: UserDataTypes,
-          G: Graphics
+pub fn debug_draw<U, G>(
+    world: &mut b2::World<U>,
+    flags: b2::DrawFlags,
+    transform: [[f64; 3]; 2],
+    c: Context,
+    g: &mut G,
+) where
+    U: UserDataTypes,
+    G: Graphics,
 {
     let mut session = Session {
         c: c,
@@ -19,7 +21,8 @@ pub fn debug_draw<U, G>(world: &mut b2::World<U>,
 }
 
 struct Session<'a, G>
-    where G: Graphics + 'a
+where
+    G: Graphics + 'a,
 {
     c: Context,
     g: &'a mut G,
@@ -27,7 +30,8 @@ struct Session<'a, G>
 }
 
 impl<'a, G> b2::Draw for Session<'a, G>
-    where G: Graphics + 'a
+where
+    G: Graphics + 'a,
 {
     fn draw_polygon(&mut self, vertices: &[b2::Vec2], color: &b2::Color) {
         let count = vertices.len();
@@ -39,31 +43,41 @@ impl<'a, G> b2::Draw for Session<'a, G>
     }
 
     fn draw_solid_polygon(&mut self, vertices: &[b2::Vec2], color: &b2::Color) {
-        Polygon::new(convert_color(color)).draw(&polygon(vertices),
-                                                &self.c.draw_state,
-                                                self.transform,
-                                                self.g);
+        Polygon::new(convert_color(color)).draw(
+            &polygon(vertices),
+            &self.c.draw_state,
+            self.transform,
+            self.g,
+        );
     }
 
     fn draw_circle(&mut self, o: &b2::Vec2, r: f32, color: &b2::Color) {
-        Ellipse::new_border(convert_color(color), 0.25).draw(circle_rect(o, r),
-                                                             &self.c.draw_state,
-                                                             self.transform,
-                                                             self.g);
+        Ellipse::new_border(convert_color(color), 0.25).draw(
+            circle_rect(o, r),
+            &self.c.draw_state,
+            self.transform,
+            self.g,
+        );
     }
 
     fn draw_solid_circle(&mut self, o: &b2::Vec2, r: f32, axis: &b2::Vec2, color: &b2::Color) {
-        Ellipse::new(convert_color(color)).draw(circle_rect(o, r),
-                                                &self.c.draw_state,
-                                                self.transform,
-                                                self.g);
+        Ellipse::new(convert_color(color)).draw(
+            circle_rect(o, r),
+            &self.c.draw_state,
+            self.transform,
+            self.g,
+        );
         self.draw_segment(o, &(o + axis * r), &BLUE);
     }
 
     fn draw_segment(&mut self, p1: &b2::Vec2, p2: &b2::Vec2, color: &b2::Color) {
         let line = [p1.x as f64, p1.y as f64, p2.x as f64, p2.y as f64];
-        Line::new(convert_color(color), 0.05)
-            .draw(line, &self.c.draw_state, self.transform, self.g);
+        Line::new(convert_color(color), 0.05).draw(
+            line,
+            &self.c.draw_state,
+            self.transform,
+            self.g,
+        );
     }
 
     fn draw_transform(&mut self, xf: &b2::Transform) {

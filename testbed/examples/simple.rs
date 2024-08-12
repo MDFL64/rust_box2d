@@ -24,16 +24,36 @@ fn main() {
         .body_mut(ground_handle)
         .create_fast_fixture(&ground_box, 0.);
 
+    let cube_shape = b2::PolygonShape::new_box(1., 1.);
+    let mut circle_shape = b2::CircleShape::new();
+    circle_shape.set_radius(1.);
+
+    // make pyramid
+    {
+        let mut f_def = b2::FixtureDef::new();
+        f_def.density = 1.0;
+
+        let mut b_def = b2::BodyDef::new();
+        b_def.body_type = b2::BodyType::Dynamic;
+
+        for i in 0..20 {
+            let y = -8.0 + i as f32 * 2.0;
+            for j in 0..(20 - i) {
+                let x = j as f32 * 2.0 - 19.0 + i as f32 * 1.0;
+                b_def.position = b2::Vec2 { x, y };
+                let handle = world.create_body(&b_def);
+                world
+                    .body_mut(handle)
+                    .create_fixture(&cube_shape, &mut f_def);
+            }
+        }
+    }
+
     let mut b_def = b2::BodyDef {
         body_type: b2::BodyType::Dynamic,
         position: b2::Vec2 { x: -20., y: 20. },
         ..b2::BodyDef::new()
     };
-
-    let cube_shape = b2::PolygonShape::new_box(1., 1.);
-
-    let mut circle_shape = b2::CircleShape::new();
-    circle_shape.set_radius(1.);
 
     let mut f_def = b2::FixtureDef {
         density: 1.,
@@ -71,15 +91,14 @@ fn main() {
     let data = testbed::Data {
         world,
         camera: testbed::Camera {
-            position: [0., 5.],
-            size: [40., 40.],
+            position: [0.0, 10.0],
+            scale: 10.0,
         },
         draw_flags: b2::DrawFlags::DRAW_SHAPE
-            | b2::DrawFlags::DRAW_AABB
             | b2::DrawFlags::DRAW_JOINT
             | b2::DrawFlags::DRAW_PAIR
             | b2::DrawFlags::DRAW_CENTER_OF_MASS,
     };
 
-    testbed::run(process_input, data, "Simple", 400, 400);
+    testbed::run(process_input, data, "Simple", 640, 480);
 }

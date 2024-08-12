@@ -1,11 +1,11 @@
-extern crate wrapped2d;
 extern crate testbed;
+extern crate wrapped2d;
 
-use std::rc::Rc;
 use std::cell::Cell;
+use std::rc::Rc;
 use wrapped2d::b2;
-use wrapped2d::user_data::NoUserData;
 use wrapped2d::dynamics::world::callbacks::ContactAccess;
+use wrapped2d::user_data::NoUserData;
 
 type UserData = NoUserData;
 type World = b2::World<NoUserData>;
@@ -17,13 +17,13 @@ fn main() {
         world: world,
         camera: testbed::Camera {
             position: [0., 10.],
-            size: [40., 40.]
+            size: [40., 40.],
         },
-        draw_flags: b2::DrawFlags::DRAW_SHAPE |
-                    b2::DrawFlags::DRAW_AABB |
-                    b2::DrawFlags::DRAW_JOINT |
-                    b2::DrawFlags::DRAW_PAIR |
-                    b2::DrawFlags::DRAW_CENTER_OF_MASS
+        draw_flags: b2::DrawFlags::DRAW_SHAPE
+            | b2::DrawFlags::DRAW_AABB
+            | b2::DrawFlags::DRAW_JOINT
+            | b2::DrawFlags::DRAW_PAIR
+            | b2::DrawFlags::DRAW_CENTER_OF_MASS,
     };
 
     testbed::run(test, data, "Breakable", 400, 400);
@@ -32,7 +32,7 @@ fn main() {
 fn create_ground(world: &mut World) -> b2::BodyHandle {
     let bd = b2::BodyDef {
         body_type: b2::BodyType::Static,
-        .. b2::BodyDef::new()
+        ..b2::BodyDef::new()
     };
 
     let ground = world.create_body(&bd);
@@ -51,19 +51,19 @@ struct Test {
     velocity: b2::Vec2,
     angular_velocity: f32,
     should_break: Rc<Cell<bool>>,
-    broke: bool
+    broke: bool,
 }
 
 impl Test {
     fn init() -> (Self, World) {
         let mut world = World::new(&b2::Vec2 { x: 0., y: -10. });
         create_ground(&mut world);
-        
+
         let bd = b2::BodyDef {
             body_type: b2::BodyType::Dynamic,
             position: b2::Vec2 { x: 0., y: 40. },
             angle: 0.25 * b2::PI,
-            .. b2::BodyDef::new()
+            ..b2::BodyDef::new()
         };
 
         let body = world.create_body(&bd);
@@ -72,20 +72,29 @@ impl Test {
         let shape2 = b2::PolygonShape::new_oriented_box(0.5, 0.5, &b2::Vec2 { x: 0.5, y: 0. }, 0.);
         let (_, piece2) = {
             let mut body = world.body_mut(body);
-            (body.create_fast_fixture(&shape1, 1.), body.create_fast_fixture(&shape2, 1.))
+            (
+                body.create_fast_fixture(&shape1, 1.),
+                body.create_fast_fixture(&shape2, 1.),
+            )
         };
 
         let should_break = Rc::new(Cell::new(false));
-        world.set_contact_listener(Box::new(ContactListener { should_break: should_break.clone() }));
+        world.set_contact_listener(Box::new(ContactListener {
+            should_break: should_break.clone(),
+        }));
 
-        (Test {
-            body: body,
-            piece2: piece2, shape2: shape2,
-            velocity: b2::Vec2 { x: 0., y: 0. },
-            angular_velocity: 0.,
-            should_break: should_break,
-            broke: false
-        }, world)
+        (
+            Test {
+                body: body,
+                piece2: piece2,
+                shape2: shape2,
+                velocity: b2::Vec2 { x: 0., y: 0. },
+                angular_velocity: 0.,
+                should_break: should_break,
+                broke: false,
+            },
+            world,
+        )
     }
 
     fn break_it(&mut self, world: &mut World) {
@@ -96,7 +105,7 @@ impl Test {
                 body_type: b2::BodyType::Dynamic,
                 position: *body.position(),
                 angle: body.angle(),
-                .. b2::BodyDef::new()
+                ..b2::BodyDef::new()
             }
         };
 
@@ -144,14 +153,14 @@ impl testbed::Test<UserData> for Test {
 }
 
 struct ContactListener {
-    should_break: Rc<Cell<bool>>
+    should_break: Rc<Cell<bool>>,
 }
 
 impl b2::ContactListener<UserData> for ContactListener {
     fn post_solve(&mut self, ca: ContactAccess<UserData>, impulse: &b2::ContactImpulse) {
         if !self.should_break.get() {
             let count = ca.contact.manifold().count as usize;
-            
+
             let mut max_impulse = 0f32;
             for i in 0..count {
                 max_impulse = max_impulse.max(impulse.normal_impulses[i]);

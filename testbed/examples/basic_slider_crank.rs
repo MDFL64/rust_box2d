@@ -1,5 +1,5 @@
-extern crate wrapped2d;
 extern crate testbed;
+extern crate wrapped2d;
 
 use wrapped2d::b2;
 use wrapped2d::user_data::NoUserData;
@@ -18,12 +18,12 @@ fn main() {
         world: world,
         camera: testbed::Camera {
             position: [0., 20.],
-            size: [40., 40.]
+            size: [40., 40.],
         },
-        draw_flags: b2::DrawFlags::DRAW_SHAPE |
-                    b2::DrawFlags::DRAW_JOINT |
-                    b2::DrawFlags::DRAW_PAIR |
-                    b2::DrawFlags::DRAW_CENTER_OF_MASS
+        draw_flags: b2::DrawFlags::DRAW_SHAPE
+            | b2::DrawFlags::DRAW_JOINT
+            | b2::DrawFlags::DRAW_PAIR
+            | b2::DrawFlags::DRAW_CENTER_OF_MASS,
     };
 
     testbed::run((), data, "Basic Slider Crank", 400, 400);
@@ -32,7 +32,7 @@ fn main() {
 fn create_ground(world: &mut World) -> b2::BodyHandle {
     let def = b2::BodyDef {
         position: b2::Vec2 { x: 0., y: 17. },
-        .. b2::BodyDef::new()
+        ..b2::BodyDef::new()
     };
 
     world.create_body(&def)
@@ -44,7 +44,7 @@ fn create_crank(world: &mut World, ground: b2::BodyHandle) -> b2::BodyHandle {
     let b_def = b2::BodyDef {
         body_type: b2::BodyType::Dynamic,
         position: b2::Vec2 { x: -8., y: 20. },
-        .. b2::BodyDef::new()
+        ..b2::BodyDef::new()
     };
 
     let handle = world.create_body(&b_def);
@@ -57,14 +57,13 @@ fn create_crank(world: &mut World, ground: b2::BodyHandle) -> b2::BodyHandle {
     handle
 }
 
-fn create_connecting_rod(world: &mut World,
-                         crank: b2::BodyHandle) -> b2::BodyHandle {
+fn create_connecting_rod(world: &mut World, crank: b2::BodyHandle) -> b2::BodyHandle {
     let shape = b2::PolygonShape::new_box(8., 1.);
 
     let b_def = b2::BodyDef {
         body_type: b2::BodyType::Dynamic,
         position: b2::Vec2 { x: 4., y: 20. },
-        .. b2::BodyDef::new()
+        ..b2::BodyDef::new()
     };
 
     let handle = world.create_body(&b_def);
@@ -77,16 +76,14 @@ fn create_connecting_rod(world: &mut World,
     handle
 }
 
-fn create_piston(world: &mut World,
-                 ground: b2::BodyHandle,
-                 connecting_rod: b2::BodyHandle) {
+fn create_piston(world: &mut World, ground: b2::BodyHandle, connecting_rod: b2::BodyHandle) {
     let shape = b2::PolygonShape::new_box(3., 3.);
 
     let b_def = b2::BodyDef {
         body_type: b2::BodyType::Dynamic,
         fixed_rotation: true,
         position: b2::Vec2 { x: 12., y: 20. },
-        .. b2::BodyDef::new()
+        ..b2::BodyDef::new()
     };
 
     let handle = world.create_body(&b_def);
@@ -97,8 +94,12 @@ fn create_piston(world: &mut World,
     world.create_joint(&j_def);
 
     let mut j_def = b2::PrismaticJointDef::new(ground, handle);
-    j_def.init(world, ground, handle,
-               &b2::Vec2 { x: 12., y: 17. },
-               &b2::Vec2 { x: 1., y: 0. });
+    j_def.init(
+        world,
+        ground,
+        handle,
+        &b2::Vec2 { x: 12., y: 17. },
+        &b2::Vec2 { x: 1., y: 0. },
+    );
     world.create_joint(&j_def);
 }
