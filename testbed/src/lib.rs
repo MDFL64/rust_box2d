@@ -116,9 +116,7 @@ where
             }
             Event::Loop(Loop::Update(UpdateArgs { dt })) => {
                 if running {
-                    let t = std::time::Instant::now();
                     test.step(&mut data, *dt as f32);
-                    //println!("t = {:?}",t.elapsed());
                 }
             }
             Event::Loop(Loop::Render(args)) => {
