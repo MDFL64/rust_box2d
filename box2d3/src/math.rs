@@ -1,9 +1,10 @@
-#[cfg(feature = "cgmath")]
-use cgmath;
-#[cfg(feature = "nalgebra")]
-use nalgebra;
-use std::mem;
 use std::ops::{Add, Div, Mul, Neg, Sub};
+
+#[repr(C)]
+pub struct AABB {
+    pub lower_bound: Vec2,
+    pub upper_bound: Vec2
+}
 
 macro_rules! forward_ref_binop {
     (impl $imp:ident, $method:ident for $t:ty, $u:ty) => {
@@ -57,24 +58,6 @@ impl Vec2 {
             x: -self.y,
             y: self.x,
         }
-    }
-}
-
-impl Vec2 {
-    pub fn as_array(&self) -> &[f32; 2] {
-        unsafe { mem::transmute(self) }
-    }
-
-    pub fn as_array_mut(&mut self) -> &mut [f32; 2] {
-        unsafe { mem::transmute(self) }
-    }
-
-    pub fn from_array_ref(array: &[f32; 2]) -> &Vec2 {
-        unsafe { mem::transmute(array) }
-    }
-
-    pub fn from_array_mut(array: &mut [f32; 2]) -> &mut Vec2 {
-        unsafe { mem::transmute(array) }
     }
 }
 

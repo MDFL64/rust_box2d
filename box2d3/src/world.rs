@@ -1,4 +1,4 @@
-use crate::{math::Vec2, Body, BodyDef, PhantomNoSend};
+use crate::{debug_draw::{DebugDraw, DebugDrawOpaque}, math::Vec2, Body, BodyDef, PhantomNoSend};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -84,6 +84,12 @@ impl World {
 		}
 	}
 
+	pub fn debug_draw<C>(&self, draw_opts: &DebugDraw<C>) {
+		unsafe {
+			b2World_Draw(*self, draw_opts.as_opaque())
+		}
+	}
+
     pub fn create_body(&self, def: &BodyDef) -> Body {
         unsafe {
             b2CreateBody(*self, def)
@@ -95,6 +101,7 @@ extern "C" {
     fn b2DefaultWorldDef() -> WorldDef;
 
     fn b2CreateWorld(def: &WorldDef) -> World;
+	fn b2World_Draw(world: World, debug_draw: *const DebugDrawOpaque);
 	fn b2World_Step(world: World, time_step: f32, substep_count: u32);
 
     fn b2CreateBody(world: World, def: &BodyDef) -> Body;

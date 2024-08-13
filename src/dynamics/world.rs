@@ -1,3 +1,4 @@
+use box2d3::debug_draw::DebugDraw;
 use box2d3::math::Rot;
 use collision::AABB;
 use common::math::Vec2;
@@ -12,6 +13,8 @@ use std::mem;
 use std::ptr;
 use user_data::UserDataTypes;
 use wrap::*;
+
+use crate::b2::Color;
 
 #[derive(Copy, Clone)]
 pub struct BodyHandle(box2d3::Body);
@@ -111,7 +114,77 @@ impl World {
 
             ffi::World_set_debug_draw(self.ptr, ptr::null_mut());
         }*/
-        println!("TODO DRAW");
+        //println!("TODO DRAW");
+
+        let draw_opts = DebugDraw::<D> {
+            draw_polygon: |_, _, _, _| {
+                println!("draw_polygon")
+            },
+            draw_solid_polygon: |xform, verts, vert_count, radius, color, draw| {
+                let vert_count = vert_count as usize;
+                let mut vert_buffer = [Vec2{x: 0.0, y: 0.0};8];
+                assert!(vert_count < vert_buffer.len());
+
+                unsafe {
+                    for i in 0..vert_count {
+                        let v = verts.add(i).read();
+                        vert_buffer[i] = &xform * v;
+                    }
+
+                    let color = color.to_floats();
+
+                    (*draw).draw_solid_polygon(&vert_buffer[0..vert_count], &Color{
+                        a: 1.0,
+                        r: color[0],
+                        g: color[1],
+                        b: color[2]
+                    });
+                }
+            },
+            draw_circle: |_, _, _, _| {
+                println!("draw_circle")
+            },
+            draw_solid_circle: |_, _, _, _| {
+                println!("draw_solid_circle")
+            },
+            draw_capsule: |_, _, _, _, _| {
+                println!("draw_capsule")
+            },
+            draw_solid_capsule: |_, _, _, _, _| {
+                println!("draw_solid_capsule")
+            },
+            draw_segment: |_, _, _, _| {
+                println!("draw_segment")
+            },
+            draw_transform: |_, _| {
+                println!("draw_transform")
+            },
+            draw_point: |_, _, _, _| {
+                println!("draw_point")
+            },
+            draw_string: |_, _, _| {
+                println!("draw_string")
+            },
+            drawing_bounds: box2d3::math::AABB {
+                lower_bound: Vec2{x: 0.0, y: 0.0},
+                upper_bound: Vec2{x: 0.0, y: 0.0},
+            },
+            use_drawing_bounds: false,
+            draw_shapes: true,
+            draw_joints: false,
+            draw_joint_extras: false,
+            draw_aabbs: false,
+            draw_mass: false,
+            draw_contacts: false,
+            draw_graph_colors: false,
+            draw_contact_normals: false,
+            draw_contact_impulses: false,
+            draw_friction_impulses: false,
+            context: draw,
+        };
+
+        self.handle.debug_draw(&draw_opts);
+
     }
 
     pub fn contacts_mut(&mut self) -> ContactIterMut {

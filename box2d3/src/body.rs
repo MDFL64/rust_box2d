@@ -81,7 +81,6 @@ pub struct Body {
     revision: u16,
     _thread_unsafe: PhantomNoSend
 }
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub enum BodyKind {
