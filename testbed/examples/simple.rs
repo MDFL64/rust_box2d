@@ -25,8 +25,7 @@ fn main() {
         .create_fast_fixture(&ground_box, 0.);
 
     let cube_shape = b2::PolygonShape::new_box(1., 1.);
-    let mut circle_shape = b2::CircleShape::new();
-    circle_shape.set_radius(1.);
+    let circle_shape = b2::CircleShape::new_with_radius(1.0);
 
     // make pyramid
     {

@@ -5,6 +5,7 @@ use self::callbacks::{
     ContactFilter, ContactFilterLink, ContactListener, ContactListenerLink, QueryCallback,
     QueryCallbackLink, RayCastCallback, RayCastCallbackLink,
 };
+use box2d3::math::Rot;
 use collision::AABB;
 use common::math::Vec2;
 use common::{Draw, DrawFlags};
@@ -20,7 +21,8 @@ use std::ptr;
 use user_data::UserDataTypes;
 use wrap::*;
 
-pub type BodyHandle = TypedHandle<Body>;
+#[derive(Copy, Clone)]
+pub struct BodyHandle(box2d3::Body);
 pub type JointHandle = TypedHandle<dyn Joint>;
 
 pub struct World<U: UserDataTypes> {
@@ -79,35 +81,64 @@ impl<U: UserDataTypes> World<U> {
     }
 
     pub fn create_body_with(&mut self, def: &BodyDef, data: U::BodyData) -> BodyHandle {
-        unsafe {
+        let mut internal_def = box2d3::BodyDef::default();
+
+        internal_def.kind = def.body_type;
+        internal_def.position = def.position;
+        internal_def.rotation = Rot::from_angle(def.angle);
+        internal_def.linear_velocity = def.linear_velocity;
+        internal_def.angular_velocity = def.angular_velocity;
+        internal_def.linear_damping = def.linear_damping;
+        internal_def.angular_damping = def.angular_damping;
+        internal_def.enable_sleep = def.allow_sleep;
+        internal_def.is_awake = def.awake;
+        internal_def.fixed_rotation = def.fixed_rotation;
+        internal_def.is_bullet = def.bullet;
+        internal_def.is_enabled = def.active;
+        internal_def.gravity_scale = def.gravity_scale;
+
+        let body = self.handle.create_body(&internal_def);
+
+        // todo insert our user data, I guess?
+        /*unsafe {
             let body = ffi::World_create_body(self.mut_ptr(), def);
             self.bodies.insert_with(|h| MetaBody::new(body, h, data))
-        }
+        }*/
+
+        BodyHandle(body)
     }
 
     pub fn body(&self, handle: BodyHandle) -> Ref<MetaBody<U>> {
-        self.bodies.get(handle).expect("invalid body handle")
+        panic!("-");
+        //self.bodies.get(handle).expect("invalid body handle")
     }
 
     pub fn body_mut(&self, handle: BodyHandle) -> RefMut<MetaBody<U>> {
-        self.bodies.get_mut(handle).expect("invalid body handle")
+        panic!("-");
+
+        //self.bodies.get_mut(handle).expect("invalid body handle")
     }
 
     pub fn try_body(&self, handle: BodyHandle) -> Option<Ref<MetaBody<U>>> {
-        self.bodies.get(handle)
+        panic!("-");
+
+        //self.bodies.get(handle)
     }
 
     pub fn try_body_mut(&self, handle: BodyHandle) -> Option<RefMut<MetaBody<U>>> {
-        self.bodies.get_mut(handle)
+        panic!("-");
+
+        //self.bodies.get_mut(handle)
     }
 
     pub fn destroy_body(&mut self, handle: BodyHandle) {
-        let mut body = self.bodies.remove(handle);
+        todo!("destroy body");
+        /*let mut body = self.bodies.remove(handle);
 
         World::remove_body_joint_handles(&mut body, &mut self.joints);
         unsafe {
             ffi::World_destroy_body(self.mut_ptr(), body.mut_ptr());
-        }
+        }*/
     }
 
     pub fn bodies(&self) -> HandleIter<Body, MetaBody<U>> {

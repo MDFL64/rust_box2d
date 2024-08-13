@@ -1,4 +1,4 @@
-use crate::{math::Vec2, PhantomNoSend};
+use crate::{math::Vec2, Body, BodyDef, PhantomNoSend};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -64,6 +64,7 @@ impl Default for WorldDef {
 }
 
 #[repr(C)]
+#[derive(Copy,Clone)]
 pub struct World {
     index: u16,
     revision: u16,
@@ -76,10 +77,17 @@ impl World {
             b2CreateWorld(def)
         }
     }
+
+    pub fn create_body(&self, def: &BodyDef) -> Body {
+        unsafe {
+            b2CreateBody(*self, def)
+        }
+    }
 }
 
 extern "C" {
     fn b2DefaultWorldDef() -> WorldDef;
 
     fn b2CreateWorld(def: &WorldDef) -> World;
+    fn b2CreateBody(world: World, def: &BodyDef) -> Body;
 }

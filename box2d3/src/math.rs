@@ -241,8 +241,8 @@ pub fn cross_sv(s: f32, v: Vec2) -> Vec2 {
 #[repr(C)]
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Rot {
-    pub sin: f32,
     pub cos: f32,
+    pub sin: f32,
 }
 
 impl Rot {

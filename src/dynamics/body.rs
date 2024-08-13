@@ -1,3 +1,4 @@
+use box2d3::body::BodyKind;
 use collision::shapes::{MassData, Shape};
 use common::math::{Transform, Vec2};
 use dynamics::contacts::{Contact, ContactEdge};
@@ -13,14 +14,7 @@ use std::ptr;
 use user_data::{InternalUserData, RawUserData, RawUserDataMut, UserData, UserDataTypes};
 use wrap::*;
 
-#[repr(C)]
-#[derive(Clone, Copy, PartialEq, Debug)]
-#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-pub enum BodyType {
-    Static = 0,
-    Kinematic = 1,
-    Dynamic = 2,
-}
+pub type BodyType = box2d3::body::BodyKind;
 
 #[repr(C)]
 #[derive(Clone)]
@@ -68,7 +62,7 @@ pub type FixtureHandle = TypedHandle<Fixture>;
 pub struct MetaBody<U: UserDataTypes> {
     body: Body,
     fixtures: HandleMap<MetaFixture<U>, Fixture>,
-    user_data: Box<InternalUserData<Body, U::BodyData>>,
+    user_data: Box<InternalUserData<BodyHandle, U::BodyData>>,
 }
 
 impl<U: UserDataTypes> MetaBody<U> {
@@ -204,7 +198,8 @@ wrap! { ffi::Body => pub Body }
 
 impl Body {
     pub fn handle(&self) -> BodyHandle {
-        unsafe { self.ptr().handle() }
+        panic!()
+        //unsafe { self.ptr().handle() }
     }
 
     pub fn transform<'a>(&'a self) -> &'a Transform {
@@ -423,7 +418,8 @@ impl<'a> Iterator for JointIter<'a> {
                 None => None,
                 Some(edge) => {
                     self.edge = edge.next;
-                    Some((edge.other.handle(), edge.joint.handle()))
+                    //Some((edge.other.handle(), edge.joint.handle()))
+                    panic!()
                 }
             }
         }
@@ -445,7 +441,7 @@ impl<'a> Iterator for ContactIter<'a> {
                 Some(edge) => {
                     self.edge = edge.next;
                     Some((
-                        edge.other.handle(),
+                        panic!(), //edge.other.handle(),
                         WrappedRef::new(Contact::from_ffi(edge.contact)),
                     ))
                 }
@@ -469,7 +465,7 @@ impl<'a> Iterator for ContactIterMut<'a> {
                 Some(ref mut edge) => {
                     self.edge = edge.next;
                     Some((
-                        edge.other.handle(),
+                        todo!(), //edge.other.handle(),
                         WrappedRefMut::new(Contact::from_ffi(edge.contact)),
                     ))
                 }

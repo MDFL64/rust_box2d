@@ -15,16 +15,16 @@ impl UserDataTypes for NoUserData {
 }
 
 #[doc(hidden)]
-pub struct InternalUserData<T: ?Sized, U> {
-    pub handle: TypedHandle<T>,
+pub struct InternalUserData<T, U> {
+    pub handle: T,
     pub custom: U,
 }
 
 #[doc(hidden)]
 pub trait RawUserData: Sized {
-    unsafe fn internal_user_data<T: ?Sized, U>(self) -> *const InternalUserData<T, U>;
+    unsafe fn internal_user_data<T, U>(self) -> *const InternalUserData<T, U>;
 
-    unsafe fn handle<T: ?Sized>(self) -> TypedHandle<T> {
+    unsafe fn handle<T>(self) -> TypedHandle<T> {
         let internal = &*self.internal_user_data::<_, ()>();
         internal.handle
     }
@@ -32,30 +32,30 @@ pub trait RawUserData: Sized {
 
 #[doc(hidden)]
 pub trait RawUserDataMut: RawUserData {
-    unsafe fn internal_user_data_mut<T: ?Sized, U>(self) -> *mut InternalUserData<T, U>;
-    unsafe fn set_internal_user_data<T: ?Sized, U>(self, _: *mut InternalUserData<T, U>);
+    unsafe fn internal_user_data_mut<T, U>(self) -> *mut InternalUserData<T, U>;
+    unsafe fn set_internal_user_data<T, U>(self, _: *mut InternalUserData<T, U>);
 }
 
 macro_rules! impl_raw_user_data {
     { $raw:ty, $getter:path, $setter:path } => {
         impl RawUserData for *const $raw {
-            unsafe fn internal_user_data<T: ?Sized, U>(self) -> *const InternalUserData<T, U> {
+            unsafe fn internal_user_data<T, U>(self) -> *const InternalUserData<T, U> {
                 $getter(self) as *const InternalUserData<T, U>
             }
         }
 
         impl RawUserData for *mut $raw {
-            unsafe fn internal_user_data<T: ?Sized, U>(self) -> *const InternalUserData<T, U> {
+            unsafe fn internal_user_data<T, U>(self) -> *const InternalUserData<T, U> {
                 $getter(self) as *const InternalUserData<T, U>
             }
         }
 
         impl RawUserDataMut for *mut $raw {
-            unsafe fn internal_user_data_mut<T: ?Sized, U>(self) -> *mut InternalUserData<T, U> {
+            unsafe fn internal_user_data_mut<T, U>(self) -> *mut InternalUserData<T, U> {
                 $getter(self) as *mut InternalUserData<T, U>
             }
 
-            unsafe fn set_internal_user_data<T: ?Sized, U>(self,
+            unsafe fn set_internal_user_data<T, U>(self,
                                                            data: *mut InternalUserData<T, U>) {
                 $setter(self, data as ffi::Any)
             }

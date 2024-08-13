@@ -10,4 +10,4 @@ pub mod shapes;
 type PhantomNoSend = PhantomData<*mut ()>;
 
 pub use world::{World, WorldDef};
-pub use world::{Body, BodyDef};
+pub use body::{Body, BodyDef};

@@ -16,6 +16,14 @@ impl CircleShape {
         }
     }
 
+    pub fn new_with_radius(radius: f32) -> Self {
+        assert!(radius > 0.0);
+        Self {
+            radius,
+            offset: Vec2 { x: 0.0, y: 0.0 }
+        }
+    }
+
     pub fn new_with(position: Vec2, radius: f32) -> Self {
         assert!(radius > 0.0);
         Self {

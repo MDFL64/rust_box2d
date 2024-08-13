@@ -57,11 +57,13 @@ impl GearJoint {
     }
 
     pub fn joint_1(&self) -> JointHandle {
-        unsafe { ffi::GearJoint_get_joint_1(self.ptr() as *mut ffi::GearJoint).handle() }
+        //unsafe { ffi::GearJoint_get_joint_1(self.ptr() as *mut ffi::GearJoint).handle() }
+        panic!()
     }
 
     pub fn joint_2(&self) -> JointHandle {
-        unsafe { ffi::GearJoint_get_joint_2(self.ptr() as *mut ffi::GearJoint).handle() }
+        //unsafe { ffi::GearJoint_get_joint_2(self.ptr() as *mut ffi::GearJoint).handle() }
+        panic!()
     }
 
     pub fn set_ratio(&mut self, ratio: f32) {

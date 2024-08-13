@@ -71,7 +71,8 @@ impl<U: UserDataTypes> MetaFixture<U> {
         let mut f = MetaFixture {
             fixture: Fixture::from_ffi(ptr),
             user_data: Box::new(InternalUserData {
-                handle: handle,
+                //handle: handle,
+                handle: todo!(),
                 custom: custom,
             }),
         };
@@ -126,7 +127,8 @@ impl Fixture {
     }
 
     pub fn body(&self) -> BodyHandle {
-        unsafe { ffi::Fixture_get_body_const(self.ptr()).handle() }
+        //unsafe { ffi::Fixture_get_body_const(self.ptr()).handle() }
+        todo!()
     }
 
     pub fn test_point(&self, point: &Vec2) -> bool {

@@ -42,6 +42,7 @@ pub use self::wheel::{WheelJoint, WheelJointDef};
 
 use common::math::Vec2;
 use dynamics::world::{BodyHandle, JointHandle, World};
+use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use user_data::{InternalUserData, RawUserData, RawUserDataMut, UserData, UserDataTypes};
 use wrap::*;
@@ -88,13 +89,13 @@ pub trait JointDef {
 
 pub struct MetaJoint<U: UserDataTypes> {
     joint: UnknownJoint,
-    user_data: Box<InternalUserData<dyn Joint, U::JointData>>,
+    user_data: PhantomData<U>, //Box<InternalUserData<dyn Joint, U::JointData>>,
 }
 
 impl<U: UserDataTypes> MetaJoint<U> {
     #[doc(hidden)]
     pub unsafe fn new(ptr: *mut ffi::Joint, handle: JointHandle, custom: U::JointData) -> Self {
-        let mut j = MetaJoint {
+        /*let mut j = MetaJoint {
             joint: UnknownJoint::from_ffi(ptr),
             user_data: Box::new(InternalUserData {
                 handle: handle,
@@ -102,17 +103,20 @@ impl<U: UserDataTypes> MetaJoint<U> {
             }),
         };
         j.mut_base_ptr().set_internal_user_data(&mut *j.user_data);
-        j
+        j*/
+        todo!()
     }
 }
 
 impl<U: UserDataTypes> UserData<U::JointData> for MetaJoint<U> {
     fn user_data(&self) -> &U::JointData {
-        &self.user_data.custom
+        todo!()
+        //&self.user_data.custom
     }
 
     fn user_data_mut(&mut self) -> &mut U::JointData {
-        &mut self.user_data.custom
+        todo!()
+        //&mut self.user_data.custom
     }
 }
 
@@ -132,7 +136,8 @@ impl<U: UserDataTypes> DerefMut for MetaJoint<U> {
 
 pub trait Joint: WrappedBase<ffi::Joint> + FromFFI<ffi::Joint> {
     fn handle(&self) -> JointHandle {
-        unsafe { self.base_ptr().handle() }
+        panic!()
+        //unsafe { self.base_ptr().handle() }
     }
 
     fn assumed_type() -> JointType
@@ -145,12 +150,14 @@ pub trait Joint: WrappedBase<ffi::Joint> + FromFFI<ffi::Joint> {
 
     fn body_a(&self) -> BodyHandle {
         // we don't need &mut self because nothing is actually mutated here
-        unsafe { ffi::Joint_get_body_a(self.base_ptr() as *mut _).handle() }
+        //unsafe { ffi::Joint_get_body_a(self.base_ptr() as *mut _).handle() }
+        panic!()
     }
 
     fn body_b(&self) -> BodyHandle {
         // we don't need &mut self because nothing is actually mutated here
-        unsafe { ffi::Joint_get_body_b(self.base_ptr() as *mut _).handle() }
+        //unsafe { ffi::Joint_get_body_b(self.base_ptr() as *mut _).handle() }
+        panic!()
     }
 
     fn anchor_a(&self) -> Vec2 {
