@@ -7,7 +7,7 @@ use wrapped2d::user_data::NoUserData;
 
 #[test]
 fn fall() {
-    let time_step = 1./60.;
+    let time_step = 1. / 60.;
     let velocity_iterations = 6;
     let position_iterations = 2;
 
@@ -49,7 +49,9 @@ fn fall() {
     let mut fixture_def = b2::FixtureDef::new();
     fixture_def.density = 1.;
     fixture_def.friction = 0.3;
-    world.body_mut(body).create_fixture(&body_box, &mut fixture_def);
+    world
+        .body_mut(body)
+        .create_fixture(&body_box, &mut fixture_def);
 
     println!("(x, y) angle");
     for _ in 0..60 {

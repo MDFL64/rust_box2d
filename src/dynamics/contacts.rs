@@ -1,11 +1,11 @@
-use std::mem;
-use wrap::*;
-use common::math::Transform;
 use collision::{Manifold, WorldManifold};
+use common::math::Transform;
 use dynamics::body::FixtureHandle;
 use dynamics::fixture::Fixture;
 use dynamics::world::BodyHandle;
+use std::mem;
 use user_data::RawUserData;
+use wrap::*;
 
 #[repr(C)]
 #[doc(hidden)]
@@ -110,38 +110,82 @@ impl Contact {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use dynamics::body::ffi::Body;
-    pub use dynamics::fixture::ffi::Fixture;
     use collision::{Manifold, WorldManifold};
     use common::math::Transform;
+    pub use dynamics::body::ffi::Body;
+    pub use dynamics::fixture::ffi::Fixture;
 
     pub enum Contact {}
 
-    extern "C" {
-        pub fn Contact_get_manifold(slf: *mut Contact) -> *mut Manifold;
-        pub fn Contact_get_manifold_const(slf: *const Contact) -> *const Manifold;
-        pub fn Contact_get_world_manifold(slf: *const Contact, wm: *mut WorldManifold);
-        pub fn Contact_is_touching(slf: *const Contact) -> bool;
-        pub fn Contact_is_enabled(slf: *const Contact) -> bool;
-        pub fn Contact_get_next(slf: *mut Contact) -> *mut Contact;
-        pub fn Contact_get_next_const(slf: *const Contact) -> *const Contact;
-        pub fn Contact_get_fixture_a(slf: *mut Contact) -> *mut Fixture;
-        pub fn Contact_get_fixture_a_const(slf: *const Contact) -> *const Fixture;
-        pub fn Contact_get_child_index_a(slf: *const Contact) -> i32;
-        pub fn Contact_get_fixture_b(slf: *mut Contact) -> *mut Fixture;
-        pub fn Contact_get_fixture_b_const(slf: *const Contact) -> *const Fixture;
-        pub fn Contact_get_child_index_b(slf: *const Contact) -> i32;
-        pub fn Contact_set_friction(slf: *mut Contact, friction: f32);
-        pub fn Contact_get_friction(slf: *const Contact) -> f32;
-        pub fn Contact_reset_friction(slf: *mut Contact);
-        pub fn Contact_set_restitution(slf: *mut Contact, restitution: f32);
-        pub fn Contact_get_restitution(slf: *const Contact) -> f32;
-        pub fn Contact_reset_restitution(slf: *mut Contact);
-        pub fn Contact_set_tangent_speed(slf: *mut Contact, speed: f32);
-        pub fn Contact_get_tangent_speed(slf: *const Contact) -> f32;
-        pub fn Contact_evaluate_virtual(slf: *mut Contact,
-                                        m: *mut Manifold,
-                                        xf_a: *const Transform,
-                                        xf_b: *const Transform);
+    pub fn Contact_get_manifold(slf: *mut Contact) -> *mut Manifold {
+        todo!()
+    }
+    pub fn Contact_get_manifold_const(slf: *const Contact) -> *const Manifold {
+        todo!()
+    }
+    pub fn Contact_get_world_manifold(slf: *const Contact, wm: *mut WorldManifold) {
+        todo!()
+    }
+    pub fn Contact_is_touching(slf: *const Contact) -> bool {
+        todo!()
+    }
+    pub fn Contact_is_enabled(slf: *const Contact) -> bool {
+        todo!()
+    }
+    pub fn Contact_get_next(slf: *mut Contact) -> *mut Contact {
+        todo!()
+    }
+    pub fn Contact_get_next_const(slf: *const Contact) -> *const Contact {
+        todo!()
+    }
+    pub fn Contact_get_fixture_a(slf: *mut Contact) -> *mut Fixture {
+        todo!()
+    }
+    pub fn Contact_get_fixture_a_const(slf: *const Contact) -> *const Fixture {
+        todo!()
+    }
+    pub fn Contact_get_child_index_a(slf: *const Contact) -> i32 {
+        todo!()
+    }
+    pub fn Contact_get_fixture_b(slf: *mut Contact) -> *mut Fixture {
+        todo!()
+    }
+    pub fn Contact_get_fixture_b_const(slf: *const Contact) -> *const Fixture {
+        todo!()
+    }
+    pub fn Contact_get_child_index_b(slf: *const Contact) -> i32 {
+        todo!()
+    }
+    pub fn Contact_set_friction(slf: *mut Contact, friction: f32) {
+        todo!()
+    }
+    pub fn Contact_get_friction(slf: *const Contact) -> f32 {
+        todo!()
+    }
+    pub fn Contact_reset_friction(slf: *mut Contact) {
+        todo!()
+    }
+    pub fn Contact_set_restitution(slf: *mut Contact, restitution: f32) {
+        todo!()
+    }
+    pub fn Contact_get_restitution(slf: *const Contact) -> f32 {
+        todo!()
+    }
+    pub fn Contact_reset_restitution(slf: *mut Contact) {
+        todo!()
+    }
+    pub fn Contact_set_tangent_speed(slf: *mut Contact, speed: f32) {
+        todo!()
+    }
+    pub fn Contact_get_tangent_speed(slf: *const Contact) -> f32 {
+        todo!()
+    }
+    pub fn Contact_evaluate_virtual(
+        slf: *mut Contact,
+        m: *mut Manifold,
+        xf_a: *const Transform,
+        xf_b: *const Transform,
+    ) {
+        todo!()
     }
 }

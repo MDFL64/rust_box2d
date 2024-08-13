@@ -55,14 +55,14 @@
 //!     type JointData = ();
 //!     type FixtureData = FixtureKind;
 //! }
-//! 
+//!
 //! pub type World = b2::World<CustomUserData>;
-//! 
+//!
 //! pub enum FixtureKind {
 //!     Wood,
 //!     Metal,
 //! }
-//! 
+//!
 //! fn main() {
 //!     let mut world = World::new(&b2::Vec2 { x: 0., y: -10. });
 //!     
@@ -71,13 +71,17 @@
 //!         position: b2::Vec2 { x: 0., y: -15. },
 //!         ..b2::BodyDef::new()
 //!     };
-//! 
+//!
 //!     let h1 = world.create_body(&def); // will use `Default` user data (`None` here)
 //!     let h2 = world.create_body_with(&def, Some(2)); // specifying user data for the body
-//! 
+//!
 //!     let user_data = world.body(h2).user_data(); // access the body user data
 //! }
 //! ```
+
+// disable me after fixing errors
+#![allow(non_snake_case)]
+#![allow(unused)]
 
 extern crate libc;
 extern crate vec_map;
@@ -86,12 +90,12 @@ extern crate bitflags;
 #[cfg(feature = "serialize")]
 #[macro_use]
 extern crate serde_derive;
-#[cfg(feature = "serialize")]
-extern crate serde;
-#[cfg(feature = "nalgebra")]
-extern crate nalgebra;
 #[cfg(feature = "cgmath")]
 extern crate cgmath;
+#[cfg(feature = "nalgebra")]
+extern crate nalgebra;
+#[cfg(feature = "serialize")]
+extern crate serde;
 
 mod ffi;
 #[doc(hidden)]
@@ -100,35 +104,40 @@ pub mod wrap;
 #[doc(hidden)]
 pub mod handle;
 
-pub mod common;
 pub mod collision;
+pub mod common;
 pub mod dynamics;
-pub mod user_data;
 #[cfg(feature = "serialize")]
 pub mod serialize;
+pub mod user_data;
 
 pub mod b2 {
-    pub use common::{Color, DrawFlags, Draw};
+    pub use collision::shapes::{
+        ChainShape, CircleShape, EdgeShape, MassData, PolygonShape, Shape, ShapeType, UnknownShape,
+    };
+    pub use collision::{
+        distance, get_point_states, test_overlap, time_of_impact, ContactFeature,
+        ContactFeatureType, ContactId, Manifold, ManifoldPoint, ManifoldType, PointState,
+        RayCastInput, RayCastOutput, WorldManifold, AABB,
+    };
+    pub use common::math::{cross_sv, cross_vs, cross_vv};
     pub use common::math::{Rot, Sweep, Transform, Vec2};
-    pub use common::math::{cross_vv, cross_vs, cross_sv};
-    pub use common::settings::{ANGULAR_SLOP, LINEAR_SLOP, MAX_MANIFOLD_POINTS,
-                               MAX_POLYGON_VERTICES, PI, POLYGON_RADIUS};
-    pub use collision::{AABB, ContactFeature, ContactId, Manifold, ManifoldPoint, WorldManifold,
-                        RayCastInput, RayCastOutput, ContactFeatureType, ManifoldType, PointState,
-                        get_point_states, test_overlap, distance, time_of_impact};
-    pub use collision::shapes::{MassData, ShapeType, UnknownShape, Shape, ChainShape, CircleShape,
-                                EdgeShape, PolygonShape};
-    pub use dynamics::Profile;
-    pub use dynamics::world::{World, BodyHandle, JointHandle};
-    pub use dynamics::world::callbacks::{ContactImpulse, ContactFilter, ContactListener,
-                                         QueryCallback, RayCastCallback};
-    pub use dynamics::body::{Body, BodyDef, MetaBody, BodyType, FixtureHandle};
+    pub use common::settings::{
+        ANGULAR_SLOP, LINEAR_SLOP, MAX_MANIFOLD_POINTS, MAX_POLYGON_VERTICES, PI, POLYGON_RADIUS,
+    };
+    pub use common::{Color, Draw, DrawFlags};
+    pub use dynamics::body::{Body, BodyDef, BodyType, FixtureHandle, MetaBody};
     pub use dynamics::fixture::{Filter, Fixture, FixtureDef, MetaFixture};
-    pub use dynamics::joints::{DistanceJoint, DistanceJointDef, FrictionJoint, FrictionJointDef,
-                               GearJoint, GearJointDef, MetaJoint, MotorJoint,
-                               MotorJointDef, MouseJoint, MouseJointDef, PrismaticJoint,
-                               PrismaticJointDef, PulleyJoint, PulleyJointDef, RevoluteJoint,
-                               RevoluteJointDef, RopeJoint, RopeJointDef, WeldJoint, WeldJointDef,
-                               WheelJoint, WheelJointDef, JointType, LimitState, UnknownJoint,
-                               Joint, JointDef};
+    pub use dynamics::joints::{
+        DistanceJoint, DistanceJointDef, FrictionJoint, FrictionJointDef, GearJoint, GearJointDef,
+        Joint, JointDef, JointType, LimitState, MetaJoint, MotorJoint, MotorJointDef, MouseJoint,
+        MouseJointDef, PrismaticJoint, PrismaticJointDef, PulleyJoint, PulleyJointDef,
+        RevoluteJoint, RevoluteJointDef, RopeJoint, RopeJointDef, UnknownJoint, WeldJoint,
+        WeldJointDef, WheelJoint, WheelJointDef,
+    };
+    pub use dynamics::world::callbacks::{
+        ContactFilter, ContactImpulse, ContactListener, QueryCallback, RayCastCallback,
+    };
+    pub use dynamics::world::{BodyHandle, JointHandle, World};
+    pub use dynamics::Profile;
 }

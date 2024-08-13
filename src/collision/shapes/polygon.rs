@@ -1,6 +1,6 @@
-use wrap::*;
-use common::math::Vec2;
 use super::Shape;
+use common::math::Vec2;
+use wrap::*;
 
 wrap_shape! {
     ffi::PolygonShape => PolygonShape
@@ -24,19 +24,19 @@ impl PolygonShape {
     pub fn set_as_oriented_box(&mut self, hw: f32, hh: f32, center: &Vec2, angle: f32) {
         unsafe { ffi::PolygonShape_set_as_oriented_box(self.mut_ptr(), hw, hh, center, angle) }
     }
-    
+
     pub fn new_with(points: &[Vec2]) -> Self {
         let mut s = Self::new();
         s.set(points);
         s
     }
-    
+
     pub fn new_box(hw: f32, hh: f32) -> Self {
         let mut s = Self::new();
         s.set_as_box(hw, hh);
         s
     }
-    
+
     pub fn new_oriented_box(hw: f32, hh: f32, center: &Vec2, angle: f32) -> Self {
         let mut s = Self::new();
         s.set_as_oriented_box(hw, hh, center, angle);
@@ -71,20 +71,40 @@ pub mod ffi {
 
     pub enum PolygonShape {}
 
-    extern "C" {
-        pub fn PolygonShape_new() -> *mut PolygonShape;
-        pub fn PolygonShape_drop(slf: *mut PolygonShape);
-        pub fn PolygonShape_as_shape(slf: *mut PolygonShape) -> *mut Shape;
-        pub fn Shape_as_polygon_shape(slf: *mut Shape) -> *mut PolygonShape;
-        pub fn PolygonShape_set(slf: *mut PolygonShape, points: *const Vec2, count: i32);
-        pub fn PolygonShape_set_as_box(slf: *mut PolygonShape, hw: f32, hh: f32);
-        pub fn PolygonShape_set_as_oriented_box(slf: *mut PolygonShape,
-                                                hw: f32,
-                                                hh: f32,
-                                                center: *const Vec2,
-                                                angle: f32);
-        pub fn PolygonShape_get_vertex_count(slf: *const PolygonShape) -> i32;
-        pub fn PolygonShape_get_vertex(slf: *const PolygonShape, index: i32) -> *const Vec2;
-        pub fn PolygonShape_validate(slf: *const PolygonShape) -> bool;
+    pub fn PolygonShape_new() -> *mut PolygonShape {
+        todo!()
+    }
+    pub fn PolygonShape_drop(slf: *mut PolygonShape) {
+        todo!()
+    }
+    pub fn PolygonShape_as_shape(slf: *mut PolygonShape) -> *mut Shape {
+        todo!()
+    }
+    pub fn Shape_as_polygon_shape(slf: *mut Shape) -> *mut PolygonShape {
+        todo!()
+    }
+    pub fn PolygonShape_set(slf: *mut PolygonShape, points: *const Vec2, count: i32) {
+        todo!()
+    }
+    pub fn PolygonShape_set_as_box(slf: *mut PolygonShape, hw: f32, hh: f32) {
+        todo!()
+    }
+    pub fn PolygonShape_set_as_oriented_box(
+        slf: *mut PolygonShape,
+        hw: f32,
+        hh: f32,
+        center: *const Vec2,
+        angle: f32,
+    ) {
+        todo!()
+    }
+    pub fn PolygonShape_get_vertex_count(slf: *const PolygonShape) -> i32 {
+        todo!()
+    }
+    pub fn PolygonShape_get_vertex(slf: *const PolygonShape, index: i32) -> *const Vec2 {
+        todo!()
+    }
+    pub fn PolygonShape_validate(slf: *const PolygonShape) -> bool {
+        todo!()
     }
 }

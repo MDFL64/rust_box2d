@@ -1,24 +1,24 @@
 #[path = "world_callbacks.rs"]
 pub mod callbacks;
 
+use self::callbacks::{
+    ContactFilter, ContactFilterLink, ContactListener, ContactListenerLink, QueryCallback,
+    QueryCallbackLink, RayCastCallback, RayCastCallbackLink,
+};
+use collision::AABB;
+use common::math::Vec2;
+use common::{Draw, DrawFlags, DrawLink};
+use dynamics::body::{Body, BodyDef, MetaBody};
+use dynamics::contacts::Contact;
+use dynamics::joints::{Joint, JointDef, MetaJoint};
+use dynamics::Profile;
+use handle::*;
+use std::cell::{Ref, RefMut};
+use std::marker::PhantomData;
 use std::mem;
 use std::ptr;
-use std::marker::PhantomData;
-use std::cell::{Ref, RefMut};
-use wrap::*;
-use handle::*;
-use common::{Draw, DrawLink, DrawFlags};
-use common::math::Vec2;
-use collision::AABB;
-use dynamics::Profile;
 use user_data::UserDataTypes;
-use dynamics::body::{BodyDef, MetaBody, Body};
-use dynamics::joints::{Joint, JointDef, MetaJoint};
-use dynamics::contacts::Contact;
-use self::callbacks::{ContactFilter, ContactFilterLink,
-                      ContactListener, ContactListenerLink,
-                      QueryCallback, QueryCallbackLink,
-                      RayCastCallback, RayCastCallbackLink};
+use wrap::*;
 
 pub type BodyHandle = TypedHandle<Body>;
 pub type JointHandle = TypedHandle<dyn Joint>;
@@ -31,7 +31,6 @@ pub struct World<U: UserDataTypes> {
     contact_listener_link: ContactListenerLink,
     draw_link: DrawLink,
 }
-
 
 impl<U: UserDataTypes> Wrapped<ffi::World> for World<U> {
     unsafe fn ptr(&self) -> *const ffi::World {
@@ -56,7 +55,7 @@ impl<U: UserDataTypes> World<U> {
             }
         }
     }
-        
+
     pub fn set_contact_filter<F: ContactFilter<U>>(&mut self, filter: Box<F>) {
         unsafe {
             let filter_ptr = self.contact_filter_link.use_with(filter);
@@ -72,7 +71,8 @@ impl<U: UserDataTypes> World<U> {
     }
 
     pub fn create_body(&mut self, def: &BodyDef) -> BodyHandle
-        where U::BodyData: Default
+    where
+        U::BodyData: Default,
     {
         self.create_body_with(def, U::BodyData::default())
     }
@@ -108,11 +108,11 @@ impl<U: UserDataTypes> World<U> {
             ffi::World_destroy_body(self.mut_ptr(), body.mut_ptr());
         }
     }
-    
+
     pub fn bodies(&self) -> HandleIter<Body, MetaBody<U>> {
         self.bodies.iter()
     }
-    
+
     fn remove_body_joint_handles(body: &mut Body, joints: &mut HandleMap<MetaJoint<U>, dyn Joint>) {
         for (_, joint) in body.joints() {
             joints.remove(joint);
@@ -120,7 +120,8 @@ impl<U: UserDataTypes> World<U> {
     }
 
     pub fn create_joint<JD: JointDef>(&mut self, def: &JD) -> JointHandle
-        where U::JointData: Default
+    where
+        U::JointData: Default,
     {
         self.create_joint_with(def, U::JointData::default())
     }
@@ -133,12 +134,17 @@ impl<U: UserDataTypes> World<U> {
     }
 
     pub fn try_create_joint<JD: JointDef>(&mut self, def: &JD) -> Option<JointHandle>
-        where U::JointData: Default
+    where
+        U::JointData: Default,
     {
         self.try_create_joint_with(def, U::JointData::default())
     }
 
-    pub fn try_create_joint_with<JD: JointDef>(&mut self, def: &JD, data: U::JointData) -> Option<JointHandle> {
+    pub fn try_create_joint_with<JD: JointDef>(
+        &mut self,
+        def: &JD,
+        data: U::JointData,
+    ) -> Option<JointHandle> {
         unsafe {
             let joint = def.try_create(self)?;
             Some(self.joints.insert_with(|h| MetaJoint::new(joint, h, data)))
@@ -167,17 +173,19 @@ impl<U: UserDataTypes> World<U> {
             ffi::World_destroy_joint(self.mut_ptr(), joint.mut_base_ptr());
         }
     }
-    
+
     pub fn joints(&self) -> HandleIter<dyn Joint, MetaJoint<U>> {
         self.joints.iter()
     }
-        
+
     pub fn step(&mut self, time_step: f32, velocity_iterations: i32, position_iterations: i32) {
         unsafe {
-            ffi::World_step(self.mut_ptr(),
-                            time_step,
-                            velocity_iterations,
-                            position_iterations);
+            ffi::World_step(
+                self.mut_ptr(),
+                time_step,
+                velocity_iterations,
+                position_iterations,
+            );
         }
     }
 
@@ -189,9 +197,9 @@ impl<U: UserDataTypes> World<U> {
         unsafe {
             let ptr = self.draw_link.use_with(draw, flags);
             ffi::World_set_debug_draw(self.mut_ptr(), ptr);
-            
+
             ffi::World_draw_debug_data(self.mut_ptr());
-            
+
             ffi::World_set_debug_draw(self.mut_ptr(), ptr::null_mut());
         }
     }
@@ -341,7 +349,10 @@ impl<'a> Iterator for ContactIterMut<'a> {
         } else {
             unsafe {
                 let next = ffi::Contact_get_next(self.ptr);
-                Some(WrappedRefMut::new(Contact::from_ffi(mem::replace(&mut self.ptr, next))))
+                Some(WrappedRefMut::new(Contact::from_ffi(mem::replace(
+                    &mut self.ptr,
+                    next,
+                ))))
             }
         }
     }
@@ -362,8 +373,8 @@ impl<'a> Iterator for ContactIter<'a> {
             unsafe {
                 let next = ffi::Contact_get_next_const(self.ptr);
                 Some(WrappedRef::new(Contact::from_ffi(
-                mem::replace(&mut self.ptr, next) as *mut ffi::Contact
-            )))
+                    mem::replace(&mut self.ptr, next) as *mut ffi::Contact,
+                )))
             }
         }
     }
@@ -371,67 +382,147 @@ impl<'a> Iterator for ContactIter<'a> {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use common::ffi::Draw;
-    pub use dynamics::body::ffi::Body;
-    pub use dynamics::joints::ffi::Joint;
-    pub use dynamics::contacts::ffi::{Contact, Contact_get_next, Contact_get_next_const};
-    pub use super::callbacks::ffi::{ContactFilter, ContactListener, QueryCallback, RayCastCallback};
-    use common::math::Vec2;
+    pub use super::callbacks::ffi::{
+        ContactFilter, ContactListener, QueryCallback, RayCastCallback,
+    };
     use collision::AABB;
-    use dynamics::Profile;
+    pub use common::ffi::Draw;
+    use common::math::Vec2;
+    pub use dynamics::body::ffi::Body;
     use dynamics::body::BodyDef;
+    pub use dynamics::contacts::ffi::{Contact, Contact_get_next, Contact_get_next_const};
+    pub use dynamics::joints::ffi::Joint;
+    use dynamics::Profile;
 
     pub enum World {}
 
-    extern "C" {
-        pub fn World_new(gravity: *const Vec2) -> *mut World;
-        pub fn World_drop(slf: *mut World);
-        pub fn World_set_contact_filter(slf: *mut World, cf: *mut ContactFilter);
-        pub fn World_set_contact_listener(slf: *mut World, cl: *mut ContactListener);
-        pub fn World_set_debug_draw(slf: *mut World, dd: *mut Draw);
-        pub fn World_create_body(slf: *mut World, def: *const BodyDef) -> *mut Body;
-        pub fn World_destroy_body(slf: *mut World, body: *mut Body);
-        pub fn World_destroy_joint(slf: *mut World, joint: *mut Joint);
-        pub fn World_step(slf: *mut World,
-                          time_step: f32,
-                          velocity_iterations: i32,
-                          position_iterations: i32);
-        pub fn World_clear_forces(slf: *mut World);
-        pub fn World_draw_debug_data(slf: *mut World);
-        pub fn World_query_aabb(slf: *const World, qc: *mut QueryCallback, aabb: *const AABB);
-        pub fn World_ray_cast(slf: *const World,
-                              rcc: *mut RayCastCallback,
-                              p1: *const Vec2,
-                              p2: *const Vec2);
-        // pub fn World_get_body_list(slf: *mut World) -> *mut Body;
-        // pub fn World_get_body_list_const(slf: *const World) -> *const Body;
-        // pub fn World_get_joint_list(slf: *mut World) -> *mut Joint;
-        // pub fn World_get_joint_list_const(slf: *const World) -> *const Joint;
-        pub fn World_get_contact_list(slf: *mut World) -> *mut Contact;
-        pub fn World_get_contact_list_const(slf: *const World) -> *const Contact;
-        pub fn World_set_allow_sleeping(slf: *mut World, flag: bool);
-        pub fn World_get_allow_sleeping(slf: *const World) -> bool;
-        pub fn World_set_warm_starting(slf: *mut World, flag: bool);
-        pub fn World_get_warm_starting(slf: *const World) -> bool;
-        pub fn World_set_continuous_physics(slf: *mut World, flag: bool);
-        pub fn World_get_continuous_physics(slf: *const World) -> bool;
-        pub fn World_set_sub_stepping(slf: *mut World, flag: bool);
-        pub fn World_get_sub_stepping(slf: *const World) -> bool;
-        pub fn World_get_proxy_count(slf: *const World) -> i32;
-        pub fn World_get_body_count(slf: *const World) -> i32;
-        pub fn World_get_joint_count(slf: *const World) -> i32;
-        pub fn World_get_contact_count(slf: *const World) -> i32;
-        pub fn World_get_tree_height(slf: *const World) -> i32;
-        pub fn World_get_tree_balance(slf: *const World) -> i32;
-        pub fn World_get_tree_quality(slf: *const World) -> f32;
-        pub fn World_set_gravity(slf: *mut World, gravity: *const Vec2);
-        pub fn World_get_gravity(slf: *const World) -> Vec2;
-        pub fn World_is_locked(slf: *const World) -> bool;
-        pub fn World_set_auto_clear_forces(slf: *mut World, flag: bool);
-        pub fn World_get_auto_clear_forces(slf: *const World) -> bool;
-        pub fn World_shift_origin(slf: *mut World, origin: *const Vec2);
-        // pub fn World_get_contact_manager(slf: *const World) -> *const ContactManager;
-        pub fn World_get_profile(slf: *const World) -> *const Profile;
-        pub fn World_dump(slf: *mut World);
+    pub fn World_new(gravity: *const Vec2) -> *mut World {
+        todo!()
+    }
+    pub fn World_drop(slf: *mut World) {
+        todo!()
+    }
+    pub fn World_set_contact_filter(slf: *mut World, cf: *mut ContactFilter) {
+        todo!()
+    }
+    pub fn World_set_contact_listener(slf: *mut World, cl: *mut ContactListener) {
+        todo!()
+    }
+    pub fn World_set_debug_draw(slf: *mut World, dd: *mut Draw) {
+        todo!()
+    }
+    pub fn World_create_body(slf: *mut World, def: *const BodyDef) -> *mut Body {
+        todo!()
+    }
+    pub fn World_destroy_body(slf: *mut World, body: *mut Body) {
+        todo!()
+    }
+    pub fn World_destroy_joint(slf: *mut World, joint: *mut Joint) {
+        todo!()
+    }
+    pub fn World_step(
+        slf: *mut World,
+        time_step: f32,
+        velocity_iterations: i32,
+        position_iterations: i32,
+    ) {
+        todo!()
+    }
+    pub fn World_clear_forces(slf: *mut World) {
+        todo!()
+    }
+    pub fn World_draw_debug_data(slf: *mut World) {
+        todo!()
+    }
+    pub fn World_query_aabb(slf: *const World, qc: *mut QueryCallback, aabb: *const AABB) {
+        todo!()
+    }
+    pub fn World_ray_cast(
+        slf: *const World,
+        rcc: *mut RayCastCallback,
+        p1: *const Vec2,
+        p2: *const Vec2,
+    ) {
+        todo!()
+    }
+    // pub fn World_get_body_list(slf: *mut World) -> *mut Body {todo!()}
+    // pub fn World_get_body_list_const(slf: *const World) -> *const Body {todo!()}
+    // pub fn World_get_joint_list(slf: *mut World) -> *mut Joint {todo!()}
+    // pub fn World_get_joint_list_const(slf: *const World) -> *const Joint {todo!()}
+    pub fn World_get_contact_list(slf: *mut World) -> *mut Contact {
+        todo!()
+    }
+    pub fn World_get_contact_list_const(slf: *const World) -> *const Contact {
+        todo!()
+    }
+    pub fn World_set_allow_sleeping(slf: *mut World, flag: bool) {
+        todo!()
+    }
+    pub fn World_get_allow_sleeping(slf: *const World) -> bool {
+        todo!()
+    }
+    pub fn World_set_warm_starting(slf: *mut World, flag: bool) {
+        todo!()
+    }
+    pub fn World_get_warm_starting(slf: *const World) -> bool {
+        todo!()
+    }
+    pub fn World_set_continuous_physics(slf: *mut World, flag: bool) {
+        todo!()
+    }
+    pub fn World_get_continuous_physics(slf: *const World) -> bool {
+        todo!()
+    }
+    pub fn World_set_sub_stepping(slf: *mut World, flag: bool) {
+        todo!()
+    }
+    pub fn World_get_sub_stepping(slf: *const World) -> bool {
+        todo!()
+    }
+    pub fn World_get_proxy_count(slf: *const World) -> i32 {
+        todo!()
+    }
+    pub fn World_get_body_count(slf: *const World) -> i32 {
+        todo!()
+    }
+    pub fn World_get_joint_count(slf: *const World) -> i32 {
+        todo!()
+    }
+    pub fn World_get_contact_count(slf: *const World) -> i32 {
+        todo!()
+    }
+    pub fn World_get_tree_height(slf: *const World) -> i32 {
+        todo!()
+    }
+    pub fn World_get_tree_balance(slf: *const World) -> i32 {
+        todo!()
+    }
+    pub fn World_get_tree_quality(slf: *const World) -> f32 {
+        todo!()
+    }
+    pub fn World_set_gravity(slf: *mut World, gravity: *const Vec2) {
+        todo!()
+    }
+    pub fn World_get_gravity(slf: *const World) -> Vec2 {
+        todo!()
+    }
+    pub fn World_is_locked(slf: *const World) -> bool {
+        todo!()
+    }
+    pub fn World_set_auto_clear_forces(slf: *mut World, flag: bool) {
+        todo!()
+    }
+    pub fn World_get_auto_clear_forces(slf: *const World) -> bool {
+        todo!()
+    }
+    pub fn World_shift_origin(slf: *mut World, origin: *const Vec2) {
+        todo!()
+    }
+    // pub fn World_get_contact_manager(slf: *const World) -> *const ContactManager {todo!()}
+    pub fn World_get_profile(slf: *const World) -> *const Profile {
+        todo!()
+    }
+    pub fn World_dump(slf: *mut World) {
+        todo!()
     }
 }

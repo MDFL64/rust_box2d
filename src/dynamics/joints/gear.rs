@@ -1,7 +1,7 @@
+use dynamics::joints::{Joint, JointDef, JointType};
+use dynamics::world::{JointHandle, World};
+use user_data::{RawUserData, UserDataTypes};
 use wrap::*;
-use user_data::{UserDataTypes, RawUserData};
-use dynamics::world::{World, JointHandle};
-use dynamics::joints::{Joint, JointType, JointDef};
 
 pub struct GearJointDef {
     pub collide_connected: bool,
@@ -23,21 +23,25 @@ impl GearJointDef {
 
 impl JointDef for GearJointDef {
     fn joint_type() -> JointType
-        where Self: Sized
+    where
+        Self: Sized,
     {
         JointType::Gear
     }
 
     unsafe fn create<U: UserDataTypes>(&self, world: &mut World<U>) -> *mut ffi::Joint {
-        self.try_create(world).expect("joint create failed: invalid joint handle")
+        self.try_create(world)
+            .expect("joint create failed: invalid joint handle")
     }
 
     unsafe fn try_create<U: UserDataTypes>(&self, world: &mut World<U>) -> Option<*mut ffi::Joint> {
-        Some(ffi::World_create_gear_joint(world.mut_ptr(),
-                                          self.collide_connected,
-                                          world.try_joint_mut(self.joint_1)?.mut_base_ptr(),
-                                          world.try_joint_mut(self.joint_2)?.mut_base_ptr(),
-                                          self.ratio))
+        Some(ffi::World_create_gear_joint(
+            world.mut_ptr(),
+            self.collide_connected,
+            world.try_joint_mut(self.joint_1)?.mut_base_ptr(),
+            world.try_joint_mut(self.joint_2)?.mut_base_ptr(),
+            self.ratio,
+        ))
     }
 }
 
@@ -67,23 +71,36 @@ impl GearJoint {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use dynamics::world::ffi::World;
     pub use dynamics::joints::ffi::Joint;
+    pub use dynamics::world::ffi::World;
 
     pub enum GearJoint {}
 
-    extern "C" {
-        pub fn World_create_gear_joint(world: *mut World,
-                                       collide_connected: bool,
-                                       joint_a: *mut Joint,
-                                       joint_b: *mut Joint,
-                                       ratio: f32)
-                                       -> *mut Joint;
-        pub fn GearJoint_as_joint(slf: *mut GearJoint) -> *mut Joint;
-        pub fn Joint_as_gear_joint(slf: *mut Joint) -> *mut GearJoint;
-        pub fn GearJoint_get_joint_1(slf: *mut GearJoint) -> *mut Joint;
-        pub fn GearJoint_get_joint_2(slf: *mut GearJoint) -> *mut Joint;
-        pub fn GearJoint_set_ratio(slf: *mut GearJoint, ratio: f32);
-        pub fn GearJoint_get_ratio(slf: *const GearJoint) -> f32;
+    pub fn World_create_gear_joint(
+        world: *mut World,
+        collide_connected: bool,
+        joint_a: *mut Joint,
+        joint_b: *mut Joint,
+        ratio: f32,
+    ) -> *mut Joint {
+        todo!()
+    }
+    pub fn GearJoint_as_joint(slf: *mut GearJoint) -> *mut Joint {
+        todo!()
+    }
+    pub fn Joint_as_gear_joint(slf: *mut Joint) -> *mut GearJoint {
+        todo!()
+    }
+    pub fn GearJoint_get_joint_1(slf: *mut GearJoint) -> *mut Joint {
+        todo!()
+    }
+    pub fn GearJoint_get_joint_2(slf: *mut GearJoint) -> *mut Joint {
+        todo!()
+    }
+    pub fn GearJoint_set_ratio(slf: *mut GearJoint, ratio: f32) {
+        todo!()
+    }
+    pub fn GearJoint_get_ratio(slf: *const GearJoint) -> f32 {
+        todo!()
     }
 }

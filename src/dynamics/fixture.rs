@@ -1,13 +1,13 @@
-use std::mem;
-use std::ptr;
-use std::ops::{Deref, DerefMut};
-use wrap::*;
-use common::math::Vec2;
-use collision::{AABB, RayCastInput, RayCastOutput};
 use collision::shapes::{MassData, ShapeType, UnknownShape};
-use dynamics::world::BodyHandle;
+use collision::{RayCastInput, RayCastOutput, AABB};
+use common::math::Vec2;
 use dynamics::body::FixtureHandle;
-use user_data::{UserDataTypes, UserData, RawUserData, RawUserDataMut, InternalUserData};
+use dynamics::world::BodyHandle;
+use std::mem;
+use std::ops::{Deref, DerefMut};
+use std::ptr;
+use user_data::{InternalUserData, RawUserData, RawUserDataMut, UserData, UserDataTypes};
+use wrap::*;
 
 #[repr(C)]
 #[derive(Clone, Debug)]
@@ -63,10 +63,11 @@ pub struct MetaFixture<U: UserDataTypes> {
 
 impl<U: UserDataTypes> MetaFixture<U> {
     #[doc(hidden)]
-    pub unsafe fn new(ptr: *mut ffi::Fixture,
-                      handle: FixtureHandle,
-                      custom: U::FixtureData)
-                      -> Self {
+    pub unsafe fn new(
+        ptr: *mut ffi::Fixture,
+        handle: FixtureHandle,
+        custom: U::FixtureData,
+    ) -> Self {
         let mut f = MetaFixture {
             fixture: Fixture::from_ffi(ptr),
             user_data: Box::new(InternalUserData {
@@ -109,7 +110,7 @@ impl Fixture {
     pub fn handle(&self) -> FixtureHandle {
         unsafe { self.ptr().handle() }
     }
-        
+
     pub fn shape_type(&self) -> ShapeType {
         unsafe { ffi::Fixture_get_type(self.ptr()) }
     }
@@ -168,14 +169,16 @@ impl Fixture {
 
     pub fn shape_mut<'a>(&'a mut self) -> WrappedRefMut<'a, UnknownShape> {
         unsafe {
-            WrappedRefMut::new(UnknownShape::from_ffi(ffi::Fixture_get_shape(self.mut_ptr())))
+            WrappedRefMut::new(UnknownShape::from_ffi(ffi::Fixture_get_shape(
+                self.mut_ptr(),
+            )))
         }
     }
 
     pub fn shape<'a>(&'a self) -> WrappedRef<'a, UnknownShape> {
         unsafe {
             WrappedRef::new(UnknownShape::from_ffi(
-                ffi::Fixture_get_shape_const(self.ptr()) as *mut ffi::Shape
+                ffi::Fixture_get_shape_const(self.ptr()) as *mut ffi::Shape,
             ))
         }
     }
@@ -211,43 +214,84 @@ impl Fixture {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use ffi::Any;
-    pub use collision::shapes::ffi::Shape;
-    pub use dynamics::body::ffi::Body;
-    use common::math::Vec2;
-    use collision::{AABB, RayCastInput, RayCastOutput};
-    use collision::shapes::{MassData, ShapeType};
     use super::Filter;
+    pub use collision::shapes::ffi::Shape;
+    use collision::shapes::{MassData, ShapeType};
+    use collision::{RayCastInput, RayCastOutput, AABB};
+    use common::math::Vec2;
+    pub use dynamics::body::ffi::Body;
+    pub use ffi::Any;
 
     pub enum Fixture {}
 
-    extern "C" {
-        pub fn Fixture_get_type(slf: *const Fixture) -> ShapeType;
-        pub fn Fixture_get_shape(slf: *mut Fixture) -> *mut Shape;
-        pub fn Fixture_get_shape_const(slf: *const Fixture) -> *const Shape;
-        pub fn Fixture_set_sensor(slf: *mut Fixture, flag: bool);
-        pub fn Fixture_is_sensor(slf: *const Fixture) -> bool;
-        pub fn Fixture_set_filter_data(slf: *mut Fixture, filter: *const Filter);
-        pub fn Fixture_get_filter_data(slf: *const Fixture) -> *const Filter;
-        pub fn Fixture_refilter(slf: *mut Fixture);
-        pub fn Fixture_get_body(slf: *mut Fixture) -> *mut Body;
-        pub fn Fixture_get_body_const(slf: *const Fixture) -> *const Body;
-        // pub fn Fixture_get_next(slf: *mut Fixture) -> *mut Fixture;
-        // pub fn Fixture_get_next_const(slf: *const Fixture) -> *const Fixture;
-        pub fn Fixture_test_point(slf: *const Fixture, p: *const Vec2) -> bool;
-        pub fn Fixture_ray_cast(slf: *const Fixture,
-                                output: *mut RayCastOutput,
-                                input: *const RayCastInput,
-                                child_index: i32)
-                                -> bool;
-        pub fn Fixture_get_mass_data(slf: *const Fixture, data: *mut MassData);
-        pub fn Fixture_set_density(slf: *mut Fixture, density: f32);
-        pub fn Fixture_get_density(slf: *const Fixture) -> f32;
-        pub fn Fixture_get_friction(slf: *const Fixture) -> f32;
-        pub fn Fixture_set_friction(slf: *mut Fixture, friction: f32);
-        pub fn Fixture_get_restitution(slf: *const Fixture) -> f32;
-        pub fn Fixture_set_restitution(slf: *mut Fixture, restitution: f32);
-        pub fn Fixture_get_aabb(slf: *const Fixture, child_id: i32) -> *const AABB;
-        pub fn Fixture_dump(slf: *mut Fixture, body_id: i32);
+    pub fn Fixture_get_type(slf: *const Fixture) -> ShapeType {
+        todo!()
+    }
+    pub fn Fixture_get_shape(slf: *mut Fixture) -> *mut Shape {
+        todo!()
+    }
+    pub fn Fixture_get_shape_const(slf: *const Fixture) -> *const Shape {
+        todo!()
+    }
+    pub fn Fixture_set_sensor(slf: *mut Fixture, flag: bool) {
+        todo!()
+    }
+    pub fn Fixture_is_sensor(slf: *const Fixture) -> bool {
+        todo!()
+    }
+    pub fn Fixture_set_filter_data(slf: *mut Fixture, filter: *const Filter) {
+        todo!()
+    }
+    pub fn Fixture_get_filter_data(slf: *const Fixture) -> *const Filter {
+        todo!()
+    }
+    pub fn Fixture_refilter(slf: *mut Fixture) {
+        todo!()
+    }
+    pub fn Fixture_get_body(slf: *mut Fixture) -> *mut Body {
+        todo!()
+    }
+    pub fn Fixture_get_body_const(slf: *const Fixture) -> *const Body {
+        todo!()
+    }
+    // pub fn Fixture_get_next(slf: *mut Fixture) -> *mut Fixture {todo!()}
+    // pub fn Fixture_get_next_const(slf: *const Fixture) -> *const Fixture {todo!()}
+    pub fn Fixture_test_point(slf: *const Fixture, p: *const Vec2) -> bool {
+        todo!()
+    }
+    pub fn Fixture_ray_cast(
+        slf: *const Fixture,
+        output: *mut RayCastOutput,
+        input: *const RayCastInput,
+        child_index: i32,
+    ) -> bool {
+        todo!()
+    }
+    pub fn Fixture_get_mass_data(slf: *const Fixture, data: *mut MassData) {
+        todo!()
+    }
+    pub fn Fixture_set_density(slf: *mut Fixture, density: f32) {
+        todo!()
+    }
+    pub fn Fixture_get_density(slf: *const Fixture) -> f32 {
+        todo!()
+    }
+    pub fn Fixture_get_friction(slf: *const Fixture) -> f32 {
+        todo!()
+    }
+    pub fn Fixture_set_friction(slf: *mut Fixture, friction: f32) {
+        todo!()
+    }
+    pub fn Fixture_get_restitution(slf: *const Fixture) -> f32 {
+        todo!()
+    }
+    pub fn Fixture_set_restitution(slf: *mut Fixture, restitution: f32) {
+        todo!()
+    }
+    pub fn Fixture_get_aabb(slf: *const Fixture, child_id: i32) -> *const AABB {
+        todo!()
+    }
+    pub fn Fixture_dump(slf: *mut Fixture, body_id: i32) {
+        todo!()
     }
 }

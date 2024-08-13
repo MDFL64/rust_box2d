@@ -1,9 +1,9 @@
-use std::mem;
-use std::ops::{Add, Sub, Mul, Div, Neg};
-#[cfg(feature = "nalgebra")]
-use nalgebra;
 #[cfg(feature = "cgmath")]
 use cgmath;
+#[cfg(feature = "nalgebra")]
+use nalgebra;
+use std::mem;
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 macro_rules! forward_ref_binop {
     (impl $imp:ident, $method:ident for $t:ty, $u:ty) => {
@@ -33,7 +33,7 @@ macro_rules! forward_ref_binop {
                 $imp::$method(*self, *other)
             }
         }
-    }
+    };
 }
 
 #[repr(C)]
@@ -79,11 +79,15 @@ impl Vec2 {
 }
 
 impl From<Vec2> for [f32; 2] {
-    fn from(v: Vec2) -> [f32; 2] { [v.x, v.y] }
+    fn from(v: Vec2) -> [f32; 2] {
+        [v.x, v.y]
+    }
 }
 
 impl From<[f32; 2]> for Vec2 {
-    fn from(v: [f32; 2]) -> Vec2 { Vec2 { x: v[0], y: v[1] } }
+    fn from(v: [f32; 2]) -> Vec2 {
+        Vec2 { x: v[0], y: v[1] }
+    }
 }
 
 #[cfg(feature = "nalgebra")]

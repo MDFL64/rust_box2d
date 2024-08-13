@@ -97,15 +97,21 @@ fn main() {
             | b2::DrawFlags::DRAW_CENTER_OF_MASS,
     };
 
-    testbed::run(Tumbler{
-        steps: 0,
-        total_time: Duration::default(),
-    }, data, "Tumbler", 800, 800);
+    testbed::run(
+        Tumbler {
+            steps: 0,
+            total_time: Duration::default(),
+        },
+        data,
+        "Tumbler",
+        800,
+        800,
+    );
 }
 
 struct Tumbler {
     steps: u32,
-    total_time: Duration
+    total_time: Duration,
 }
 
 impl testbed::Test<NoUserData> for Tumbler {

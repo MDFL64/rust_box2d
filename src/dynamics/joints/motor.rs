@@ -1,8 +1,8 @@
-use wrap::*;
 use common::math::Vec2;
+use dynamics::joints::{Joint, JointDef, JointType};
+use dynamics::world::{BodyHandle, World};
 use user_data::UserDataTypes;
-use dynamics::world::{World, BodyHandle};
-use dynamics::joints::{Joint, JointType, JointDef};
+use wrap::*;
 
 pub struct MotorJointDef {
     pub body_a: BodyHandle,
@@ -29,17 +29,22 @@ impl MotorJointDef {
         }
     }
 
-    pub fn init<U: UserDataTypes>(&mut self,
-                                  world: &World<U>,
-                                  body_a: BodyHandle,
-                                  body_b: BodyHandle) {
-        self.try_init(world, body_a, body_b).expect("joint init filed: invalid body handle");
+    pub fn init<U: UserDataTypes>(
+        &mut self,
+        world: &World<U>,
+        body_a: BodyHandle,
+        body_b: BodyHandle,
+    ) {
+        self.try_init(world, body_a, body_b)
+            .expect("joint init filed: invalid body handle");
     }
 
-    pub fn try_init<U: UserDataTypes>(&mut self,
-                                      world: &World<U>,
-                                      body_a: BodyHandle,
-                                      body_b: BodyHandle) -> Option<()> {
+    pub fn try_init<U: UserDataTypes>(
+        &mut self,
+        world: &World<U>,
+        body_a: BodyHandle,
+        body_b: BodyHandle,
+    ) -> Option<()> {
         self.body_a = body_a;
         self.body_b = body_b;
         let a = world.try_body(body_a)?;
@@ -52,25 +57,29 @@ impl MotorJointDef {
 
 impl JointDef for MotorJointDef {
     fn joint_type() -> JointType
-        where Self: Sized
+    where
+        Self: Sized,
     {
         JointType::Motor
     }
 
     unsafe fn create<U: UserDataTypes>(&self, world: &mut World<U>) -> *mut ffi::Joint {
-        self.try_create(world).expect("joint create failed: invalid body handle")
+        self.try_create(world)
+            .expect("joint create failed: invalid body handle")
     }
 
     unsafe fn try_create<U: UserDataTypes>(&self, world: &mut World<U>) -> Option<*mut ffi::Joint> {
-        Some(ffi::World_create_motor_joint(world.mut_ptr(),
-                                           world.try_body_mut(self.body_a)?.mut_ptr(),
-                                           world.try_body_mut(self.body_b)?.mut_ptr(),
-                                           self.collide_connected,
-                                           self.linear_offset,
-                                           self.angular_offset,
-                                           self.max_force,
-                                           self.max_torque,
-                                           self.correction_factor))
+        Some(ffi::World_create_motor_joint(
+            world.mut_ptr(),
+            world.try_body_mut(self.body_a)?.mut_ptr(),
+            world.try_body_mut(self.body_b)?.mut_ptr(),
+            self.collide_connected,
+            self.linear_offset,
+            self.angular_offset,
+            self.max_force,
+            self.max_torque,
+            self.correction_factor,
+        ))
     }
 }
 
@@ -126,35 +135,60 @@ impl MotorJoint {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use dynamics::world::ffi::World;
+    use common::math::Vec2;
     pub use dynamics::body::ffi::Body;
     pub use dynamics::joints::ffi::Joint;
-    use common::math::Vec2;
+    pub use dynamics::world::ffi::World;
 
     pub enum MotorJoint {}
 
-    extern "C" {
-        pub fn World_create_motor_joint(world: *mut World,
-                                        body_a: *mut Body,
-                                        body_b: *mut Body,
-                                        collide_connected: bool,
-                                        linear_offset: Vec2,
-                                        angular_offset: f32,
-                                        max_force: f32,
-                                        max_torque: f32,
-                                        correction_factor: f32)
-                                        -> *mut Joint;
-        pub fn MotorJoint_as_joint(slf: *mut MotorJoint) -> *mut Joint;
-        pub fn Joint_as_motor_joint(slf: *mut Joint) -> *mut MotorJoint;
-        pub fn MotorJoint_set_linear_offset(slf: *mut MotorJoint, offset: *const Vec2);
-        pub fn MotorJoint_get_linear_offset(slf: *const MotorJoint) -> *const Vec2;
-        pub fn MotorJoint_set_angular_offset(slf: *mut MotorJoint, offset: f32);
-        pub fn MotorJoint_get_angular_offset(slf: *const MotorJoint) -> f32;
-        pub fn MotorJoint_set_max_force(slf: *mut MotorJoint, force: f32);
-        pub fn MotorJoint_get_max_force(slf: *const MotorJoint) -> f32;
-        pub fn MotorJoint_set_max_torque(slf: *mut MotorJoint, torque: f32);
-        pub fn MotorJoint_get_max_torque(slf: *const MotorJoint) -> f32;
-        pub fn MotorJoint_set_correction_factor(slf: *mut MotorJoint, factor: f32);
-        pub fn MotorJoint_get_correction_factor(slf: *const MotorJoint) -> f32;
+    pub fn World_create_motor_joint(
+        world: *mut World,
+        body_a: *mut Body,
+        body_b: *mut Body,
+        collide_connected: bool,
+        linear_offset: Vec2,
+        angular_offset: f32,
+        max_force: f32,
+        max_torque: f32,
+        correction_factor: f32,
+    ) -> *mut Joint {
+        todo!()
+    }
+    pub fn MotorJoint_as_joint(slf: *mut MotorJoint) -> *mut Joint {
+        todo!()
+    }
+    pub fn Joint_as_motor_joint(slf: *mut Joint) -> *mut MotorJoint {
+        todo!()
+    }
+    pub fn MotorJoint_set_linear_offset(slf: *mut MotorJoint, offset: *const Vec2) {
+        todo!()
+    }
+    pub fn MotorJoint_get_linear_offset(slf: *const MotorJoint) -> *const Vec2 {
+        todo!()
+    }
+    pub fn MotorJoint_set_angular_offset(slf: *mut MotorJoint, offset: f32) {
+        todo!()
+    }
+    pub fn MotorJoint_get_angular_offset(slf: *const MotorJoint) -> f32 {
+        todo!()
+    }
+    pub fn MotorJoint_set_max_force(slf: *mut MotorJoint, force: f32) {
+        todo!()
+    }
+    pub fn MotorJoint_get_max_force(slf: *const MotorJoint) -> f32 {
+        todo!()
+    }
+    pub fn MotorJoint_set_max_torque(slf: *mut MotorJoint, torque: f32) {
+        todo!()
+    }
+    pub fn MotorJoint_get_max_torque(slf: *const MotorJoint) -> f32 {
+        todo!()
+    }
+    pub fn MotorJoint_set_correction_factor(slf: *mut MotorJoint, factor: f32) {
+        todo!()
+    }
+    pub fn MotorJoint_get_correction_factor(slf: *const MotorJoint) -> f32 {
+        todo!()
     }
 }

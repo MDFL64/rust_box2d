@@ -1,20 +1,25 @@
-use std::mem;
-use std::any::Any;
-use std::ops::*;
-use std::marker::PhantomData;
-use wrap::*;
+use collision::Manifold;
 use common::math::Vec2;
 use common::settings::MAX_MANIFOLD_POINTS;
-use collision::Manifold;
-use dynamics::world::BodyHandle;
 use dynamics::body::{Body, FixtureHandle};
-use dynamics::fixture::Fixture;
 use dynamics::contacts::Contact;
+use dynamics::fixture::Fixture;
+use dynamics::world::BodyHandle;
+use std::any::Any;
+use std::marker::PhantomData;
+use std::mem;
+use std::ops::*;
 use user_data::{InternalUserData, RawUserData, RawUserDataMut, UserData, UserDataTypes};
+use wrap::*;
 
 pub trait ContactFilter<U: UserDataTypes>: Any {
-    fn should_collide(&mut self, body_a: BodyAccess<U>, fixture_a: FixtureAccess<U>,
-                                 body_b: BodyAccess<U>, fixture_b: FixtureAccess<U>) -> bool;
+    fn should_collide(
+        &mut self,
+        body_a: BodyAccess<U>,
+        fixture_a: FixtureAccess<U>,
+        body_b: BodyAccess<U>,
+        fixture_b: FixtureAccess<U>,
+    ) -> bool;
 }
 
 #[doc(hidden)]
@@ -32,30 +37,39 @@ impl ContactFilterLink {
             object: None,
         }
     }
-    
+
     pub unsafe fn use_with<F, U>(&mut self, mut filter: Box<F>) -> *mut ffi::ContactFilter
-        where F: ContactFilter<U>, U: UserDataTypes
+    where
+        F: ContactFilter<U>,
+        U: UserDataTypes,
     {
-        ffi::ContactFilterLink_bind(self.mut_ptr(),
-                                    mem::transmute::<&mut F, _>(&mut *filter),
-                                    cfl_should_collide::<F, U>);
+        ffi::ContactFilterLink_bind(
+            self.mut_ptr(),
+            mem::transmute::<&mut F, _>(&mut *filter),
+            cfl_should_collide::<F, U>,
+        );
         self.object = Some(filter);
         ffi::ContactFilterLink_as_base(self.mut_ptr())
     }
 }
 
-unsafe extern "C" fn cfl_should_collide<F, U>(object: ffi::Any,
-                                              fixture_a: *mut ffi::Fixture,
-                                              fixture_b: *mut ffi::Fixture)
-                                              -> bool
-        where F: ContactFilter<U>, U: UserDataTypes
+unsafe extern "C" fn cfl_should_collide<F, U>(
+    object: ffi::Any,
+    fixture_a: *mut ffi::Fixture,
+    fixture_b: *mut ffi::Fixture,
+) -> bool
+where
+    F: ContactFilter<U>,
+    U: UserDataTypes,
 {
     let filter = mem::transmute::<_, &mut F>(object);
-    body_access(ffi::Fixture_get_body(fixture_a), |ba|
-    fixture_access(fixture_a, |fa|
-    body_access(ffi::Fixture_get_body(fixture_b), |bb|
-    fixture_access(fixture_b, |fb|
-        filter.should_collide(ba, fa, bb, fb)))))
+    body_access(ffi::Fixture_get_body(fixture_a), |ba| {
+        fixture_access(fixture_a, |fa| {
+            body_access(ffi::Fixture_get_body(fixture_b), |bb| {
+                fixture_access(fixture_b, |fb| filter.should_collide(ba, fa, bb, fb))
+            })
+        })
+    })
 }
 
 impl Drop for ContactFilterLink {
@@ -95,48 +109,61 @@ impl ContactListenerLink {
     }
 
     pub unsafe fn use_with<L, U>(&mut self, mut listener: Box<L>) -> *mut ffi::ContactListener
-        where L: ContactListener<U>, U: UserDataTypes
+    where
+        L: ContactListener<U>,
+        U: UserDataTypes,
     {
-        ffi::ContactListenerLink_bind(self.mut_ptr(),
-                                      mem::transmute::<&mut L, _>(&mut *listener),             cll_begin_contact::<L, U>,
-                                      cll_end_contact::<L, U>,
-                                      cll_pre_solve::<L, U>,
-                                      cll_post_solve::<L, U>);
+        ffi::ContactListenerLink_bind(
+            self.mut_ptr(),
+            mem::transmute::<&mut L, _>(&mut *listener),
+            cll_begin_contact::<L, U>,
+            cll_end_contact::<L, U>,
+            cll_pre_solve::<L, U>,
+            cll_post_solve::<L, U>,
+        );
         self.object = Some(listener);
         ffi::ContactListenerLink_as_base(self.mut_ptr())
     }
 }
 
-unsafe extern "C" fn cll_begin_contact<L, U>(object: ffi::Any,
-                                             contact: *mut ffi::Contact)
-    where L: ContactListener<U>, U: UserDataTypes
+unsafe extern "C" fn cll_begin_contact<L, U>(object: ffi::Any, contact: *mut ffi::Contact)
+where
+    L: ContactListener<U>,
+    U: UserDataTypes,
 {
     let listener = mem::transmute::<_, &mut L>(object);
     contact_access(contact, |c| listener.begin_contact(c))
 }
 
-unsafe extern "C" fn cll_end_contact<L, U>(object: ffi::Any,
-                                           contact: *mut ffi::Contact)
-    where L: ContactListener<U>, U: UserDataTypes
+unsafe extern "C" fn cll_end_contact<L, U>(object: ffi::Any, contact: *mut ffi::Contact)
+where
+    L: ContactListener<U>,
+    U: UserDataTypes,
 {
     let listener = mem::transmute::<_, &mut L>(object);
     contact_access(contact, |c| listener.end_contact(c))
 }
 
-unsafe extern "C" fn cll_pre_solve<L, U>(object: ffi::Any,
-                                         contact: *mut ffi::Contact,
-                                         old_manifold: *const Manifold)
-    where L: ContactListener<U>, U: UserDataTypes
+unsafe extern "C" fn cll_pre_solve<L, U>(
+    object: ffi::Any,
+    contact: *mut ffi::Contact,
+    old_manifold: *const Manifold,
+) where
+    L: ContactListener<U>,
+    U: UserDataTypes,
 {
     assert!(!old_manifold.is_null());
     let listener = mem::transmute::<_, &mut L>(object);
     contact_access(contact, |c| listener.pre_solve(c, &*old_manifold))
 }
 
-unsafe extern "C" fn cll_post_solve<L, U>(object: ffi::Any,
-                                          contact: *mut ffi::Contact,
-                                          impulse: *const ContactImpulse)
-    where L: ContactListener<U>, U: UserDataTypes
+unsafe extern "C" fn cll_post_solve<L, U>(
+    object: ffi::Any,
+    contact: *mut ffi::Contact,
+    impulse: *const ContactImpulse,
+) where
+    L: ContactListener<U>,
+    U: UserDataTypes,
 {
     assert!(!impulse.is_null());
     let listener = mem::transmute::<_, &mut L>(object);
@@ -154,37 +181,43 @@ pub struct ContactAccess<'a, U: UserDataTypes> {
     pub body_a: BodyAccess<'a, U>,
     pub fixture_a: FixtureAccess<'a, U>,
     pub body_b: BodyAccess<'a, U>,
-    pub fixture_b: FixtureAccess<'a, U>
+    pub fixture_b: FixtureAccess<'a, U>,
 }
 
 #[inline(always)]
 unsafe fn contact_access<F, O, U>(contact: *mut ffi::Contact, f: F) -> O
-    where F: for<'a> FnOnce(ContactAccess<'a, U>) -> O,
-          U: UserDataTypes
+where
+    F: for<'a> FnOnce(ContactAccess<'a, U>) -> O,
+    U: UserDataTypes,
 {
     let fixture_a = ffi::Contact_get_fixture_a(contact);
     let fixture_b = ffi::Contact_get_fixture_b(contact);
     let mut contact = WrappedRefMut::new(Contact::from_ffi(contact));
 
-    body_access(ffi::Fixture_get_body(fixture_a), |ba|
-    fixture_access(fixture_a, |fa|
-    body_access(ffi::Fixture_get_body(fixture_b), |bb|
-    fixture_access(fixture_b, |fb|
-        f(ContactAccess {
-            contact: &mut contact,
-            body_a: ba,
-            fixture_a: fa,
-            body_b: bb,
-            fixture_b: fb
-        })))))
+    body_access(ffi::Fixture_get_body(fixture_a), |ba| {
+        fixture_access(fixture_a, |fa| {
+            body_access(ffi::Fixture_get_body(fixture_b), |bb| {
+                fixture_access(fixture_b, |fb| {
+                    f(ContactAccess {
+                        contact: &mut contact,
+                        body_a: ba,
+                        fixture_a: fa,
+                        body_b: bb,
+                        fixture_b: fb,
+                    })
+                })
+            })
+        })
+    })
 }
 
 pub struct FixtureAccess<'a, U: UserDataTypes>(&'a mut Fixture, PhantomData<U>);
 
 #[inline(always)]
 unsafe fn fixture_access<F, O, U>(fixture: *mut ffi::Fixture, f: F) -> O
-    where F: for<'a> FnOnce(FixtureAccess<'a, U>) -> O,
-          U: UserDataTypes
+where
+    F: for<'a> FnOnce(FixtureAccess<'a, U>) -> O,
+    U: UserDataTypes,
 {
     let mut fixture = WrappedRefMut::new(Fixture::from_ffi(fixture));
     f(FixtureAccess(&mut fixture, PhantomData))
@@ -226,8 +259,9 @@ pub struct BodyAccess<'a, U: UserDataTypes>(&'a mut Body, PhantomData<U>);
 
 #[inline(always)]
 unsafe fn body_access<F, O, U>(body: *mut ffi::Body, f: F) -> O
-    where F: for<'a> FnOnce(BodyAccess<'a, U>) -> O,
-          U: UserDataTypes
+where
+    F: for<'a> FnOnce(BodyAccess<'a, U>) -> O,
+    U: UserDataTypes,
 {
     let mut body = WrappedRefMut::new(Body::from_ffi(body));
     f(BodyAccess(&mut body, PhantomData))
@@ -236,8 +270,7 @@ unsafe fn body_access<F, O, U>(body: *mut ffi::Body, f: F) -> O
 impl<'a, U: UserDataTypes> UserData<U::BodyData> for BodyAccess<'a, U> {
     fn user_data(&self) -> &U::BodyData {
         unsafe {
-            let internal: &InternalUserData<(), U::BodyData> =
-                &*self.0.ptr().internal_user_data();
+            let internal: &InternalUserData<(), U::BodyData> = &*self.0.ptr().internal_user_data();
             &internal.custom
         }
     }
@@ -270,7 +303,8 @@ pub trait QueryCallback {
 }
 
 impl<F> QueryCallback for F
-    where F: FnMut(BodyHandle, FixtureHandle) -> bool
+where
+    F: FnMut(BodyHandle, FixtureHandle) -> bool,
 {
     fn report_fixture(&mut self, body: BodyHandle, fixture: FixtureHandle) -> bool {
         self(body, fixture)
@@ -284,17 +318,23 @@ impl QueryCallbackLink {
         QueryCallbackLink::from_ffi(ffi::QueryCallbackLink_alloc())
     }
 
-    pub unsafe fn use_with<C: QueryCallback>(&mut self, callback: &mut C) -> *mut ffi::QueryCallback {
-        ffi::QueryCallbackLink_bind(self.mut_ptr(),
-                                    mem::transmute(callback),
-                                    qcl_report_fixture::<C>);
+    pub unsafe fn use_with<C: QueryCallback>(
+        &mut self,
+        callback: &mut C,
+    ) -> *mut ffi::QueryCallback {
+        ffi::QueryCallbackLink_bind(
+            self.mut_ptr(),
+            mem::transmute(callback),
+            qcl_report_fixture::<C>,
+        );
         ffi::QueryCallbackLink_as_base(self.mut_ptr())
     }
 }
 
-unsafe extern "C" fn qcl_report_fixture<C: QueryCallback>(object: ffi::Any,
-                                                          fixture: *mut ffi::Fixture)
-                                                          -> bool {
+unsafe extern "C" fn qcl_report_fixture<C: QueryCallback>(
+    object: ffi::Any,
+    fixture: *mut ffi::Fixture,
+) -> bool {
     let callback = mem::transmute::<_, &mut C>(object);
     let body_handle = WrappedRef::new(Fixture::from_ffi(fixture)).body();
     callback.report_fixture(body_handle, fixture.handle())
@@ -307,25 +347,28 @@ impl Drop for QueryCallbackLink {
 }
 
 pub trait RayCastCallback {
-    fn report_fixture(&mut self,
-                      body: BodyHandle,
-                      fixture: FixtureHandle,
-                      p: &Vec2,
-                      normal: &Vec2,
-                      fraction: f32)
-                      -> f32;
+    fn report_fixture(
+        &mut self,
+        body: BodyHandle,
+        fixture: FixtureHandle,
+        p: &Vec2,
+        normal: &Vec2,
+        fraction: f32,
+    ) -> f32;
 }
 
 impl<F> RayCastCallback for F
-    where F: FnMut(BodyHandle, FixtureHandle, &Vec2, &Vec2, f32) -> f32
+where
+    F: FnMut(BodyHandle, FixtureHandle, &Vec2, &Vec2, f32) -> f32,
 {
-    fn report_fixture(&mut self,
-                      body: BodyHandle,
-                      fixture: FixtureHandle,
-                      p: &Vec2,
-                      normal: &Vec2,
-                      fraction: f32)
-                      -> f32 {
+    fn report_fixture(
+        &mut self,
+        body: BodyHandle,
+        fixture: FixtureHandle,
+        p: &Vec2,
+        normal: &Vec2,
+        fraction: f32,
+    ) -> f32 {
         self(body, fixture, p, normal, fraction)
     }
 }
@@ -337,20 +380,26 @@ impl RayCastCallbackLink {
         RayCastCallbackLink::from_ffi(ffi::RayCastCallbackLink_alloc())
     }
 
-    pub unsafe fn use_with<C: RayCastCallback>(&mut self, callback: &mut C) -> *mut ffi::RayCastCallback {
-        ffi::RayCastCallbackLink_bind(self.mut_ptr(),
-                                      mem::transmute(callback),
-                                      rccl_report_fixture::<C>);
+    pub unsafe fn use_with<C: RayCastCallback>(
+        &mut self,
+        callback: &mut C,
+    ) -> *mut ffi::RayCastCallback {
+        ffi::RayCastCallbackLink_bind(
+            self.mut_ptr(),
+            mem::transmute(callback),
+            rccl_report_fixture::<C>,
+        );
         ffi::RayCastCallbackLink_as_base(self.mut_ptr())
     }
 }
 
-unsafe extern "C" fn rccl_report_fixture<C: RayCastCallback>(object: ffi::Any,
-                                                             fixture: *mut ffi::Fixture,
-                                                             point: *const Vec2,
-                                                             normal: *const Vec2,
-                                                             fraction: f32)
-                                                             -> f32 {
+unsafe extern "C" fn rccl_report_fixture<C: RayCastCallback>(
+    object: ffi::Any,
+    fixture: *mut ffi::Fixture,
+    point: *const Vec2,
+    normal: *const Vec2,
+    fraction: f32,
+) -> f32 {
     // point and normal are coming from C++ &s
     let callback = mem::transmute::<_, &mut C>(object);
     let body_handle = WrappedRef::new(Fixture::from_ffi(fixture)).body();
@@ -365,15 +414,15 @@ impl Drop for RayCastCallbackLink {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use ffi::Any;
+    use super::ContactImpulse;
     pub use collision::shapes::ffi::Shape;
+    use collision::Manifold;
+    use common::math::Vec2;
     pub use dynamics::body::ffi::Body;
+    pub use dynamics::contacts::ffi::{Contact, Contact_get_fixture_a, Contact_get_fixture_b};
     pub use dynamics::fixture::ffi::{Fixture, Fixture_get_body};
     pub use dynamics::joints::ffi::Joint;
-    pub use dynamics::contacts::ffi::{Contact, Contact_get_fixture_a, Contact_get_fixture_b};
-    use common::math::Vec2;
-    use collision::Manifold;
-    use super::ContactImpulse;
+    pub use ffi::Any;
 
     pub enum ContactFilter {}
     pub enum ContactFilterLink {}
@@ -384,47 +433,71 @@ pub mod ffi {
     pub enum RayCastCallback {}
     pub enum RayCastCallbackLink {}
 
-    extern "C" {
-        pub fn ContactFilterLink_alloc() -> *mut ContactFilterLink;
-        pub fn ContactFilterLink_bind(slf: *mut ContactFilterLink,
-                                      object: Any,
-                                      should_collide: unsafe extern "C" fn(Any,
-                                                                           *mut Fixture,
-                                                                           *mut Fixture)
-                                                                           -> bool);
-        pub fn ContactFilterLink_as_base(slf: *mut ContactFilterLink) -> *mut ContactFilter;
-        pub fn ContactFilterLink_drop(slf: *mut ContactFilterLink);
-        pub fn ContactListenerLink_alloc() -> *mut ContactListenerLink;
-        pub fn ContactListenerLink_bind(slf: *mut ContactListenerLink,
-                                        object: Any,
-                                        begin_contact: unsafe extern "C" fn(Any, *mut  Contact),
-                                        end_contact: unsafe extern "C" fn(Any, *mut  Contact),
-                                        pre_solve: unsafe extern "C" fn(Any,
-                                                                        *mut Contact,
-                                                                        *const Manifold)
-                                                                       ,
-                                        post_solve: unsafe extern "C" fn(Any,
-                                                                        *mut Contact,
-                                                                        *const ContactImpulse));
-        pub fn ContactListenerLink_as_base(slf: *mut ContactListenerLink) -> *mut ContactListener;
-        pub fn ContactListenerLink_drop(slf: *mut ContactListenerLink);
-        pub fn QueryCallbackLink_alloc() -> *mut QueryCallbackLink;
-        pub fn QueryCallbackLink_bind(slf: *mut QueryCallbackLink,
-                                      object: Any,
-                                      report_fixture: unsafe extern "C" fn(Any, *mut  Fixture)
-                                                                           -> bool);
-        pub fn QueryCallbackLink_as_base(slf: *mut QueryCallbackLink) -> *mut QueryCallback;
-        pub fn QueryCallbackLink_drop(slf: *mut QueryCallbackLink);
-        pub fn RayCastCallbackLink_alloc() -> *mut RayCastCallbackLink;
-        pub fn RayCastCallbackLink_bind(slf: *mut RayCastCallbackLink,
-                                        object: Any,
-                                        hit_fixture: unsafe extern "C" fn(Any,
-                                                                          *mut Fixture,
-                                                                          *const Vec2,
-                                                                          *const Vec2,
-                                                                          f32)
-                                                                          -> f32);
-        pub fn RayCastCallbackLink_as_base(slf: *mut RayCastCallbackLink) -> *mut RayCastCallback;
-        pub fn RayCastCallbackLink_drop(slf: *mut RayCastCallbackLink);
+    pub fn ContactFilterLink_alloc() -> *mut ContactFilterLink {
+        todo!()
+    }
+    pub fn ContactFilterLink_bind(
+        slf: *mut ContactFilterLink,
+        object: Any,
+        should_collide: unsafe extern "C" fn(Any, *mut Fixture, *mut Fixture) -> bool,
+    ) {
+        todo!()
+    }
+    pub fn ContactFilterLink_as_base(slf: *mut ContactFilterLink) -> *mut ContactFilter {
+        todo!()
+    }
+    pub fn ContactFilterLink_drop(slf: *mut ContactFilterLink) {
+        todo!()
+    }
+    pub fn ContactListenerLink_alloc() -> *mut ContactListenerLink {
+        todo!()
+    }
+    pub fn ContactListenerLink_bind(
+        slf: *mut ContactListenerLink,
+        object: Any,
+        begin_contact: unsafe extern "C" fn(Any, *mut Contact),
+        end_contact: unsafe extern "C" fn(Any, *mut Contact),
+        pre_solve: unsafe extern "C" fn(Any, *mut Contact, *const Manifold),
+        post_solve: unsafe extern "C" fn(Any, *mut Contact, *const ContactImpulse),
+    ) {
+        todo!()
+    }
+    pub fn ContactListenerLink_as_base(slf: *mut ContactListenerLink) -> *mut ContactListener {
+        todo!()
+    }
+    pub fn ContactListenerLink_drop(slf: *mut ContactListenerLink) {
+        todo!()
+    }
+    pub fn QueryCallbackLink_alloc() -> *mut QueryCallbackLink {
+        todo!()
+    }
+    pub fn QueryCallbackLink_bind(
+        slf: *mut QueryCallbackLink,
+        object: Any,
+        report_fixture: unsafe extern "C" fn(Any, *mut Fixture) -> bool,
+    ) {
+        todo!()
+    }
+    pub fn QueryCallbackLink_as_base(slf: *mut QueryCallbackLink) -> *mut QueryCallback {
+        todo!()
+    }
+    pub fn QueryCallbackLink_drop(slf: *mut QueryCallbackLink) {
+        todo!()
+    }
+    pub fn RayCastCallbackLink_alloc() -> *mut RayCastCallbackLink {
+        todo!()
+    }
+    pub fn RayCastCallbackLink_bind(
+        slf: *mut RayCastCallbackLink,
+        object: Any,
+        hit_fixture: unsafe extern "C" fn(Any, *mut Fixture, *const Vec2, *const Vec2, f32) -> f32,
+    ) {
+        todo!()
+    }
+    pub fn RayCastCallbackLink_as_base(slf: *mut RayCastCallbackLink) -> *mut RayCastCallback {
+        todo!()
+    }
+    pub fn RayCastCallbackLink_drop(slf: *mut RayCastCallbackLink) {
+        todo!()
     }
 }

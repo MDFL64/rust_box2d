@@ -1,7 +1,7 @@
+use collision::{RayCastInput, RayCastOutput, AABB};
+use common::math::{Transform, Vec2};
 use std::mem;
 use wrap::*;
-use common::math::{Vec2, Transform};
-use collision::{RayCastInput, RayCastOutput, AABB};
 
 macro_rules! wrap_shape {
     {
@@ -20,8 +20,8 @@ macro_rules! wrap_shape {
 }
 
 pub mod chain;
-pub mod edge;
 pub mod circle;
+pub mod edge;
 pub mod polygon;
 
 pub use self::chain::ChainShape;
@@ -60,18 +60,21 @@ pub trait Shape: WrappedBase<ffi::Shape> {
         unsafe { ffi::Shape_test_point_virtual(self.base_ptr(), xf, p) }
     }
 
-    fn ray_cast(&self,
-                input: &RayCastInput,
-                transform: &Transform,
-                child_index: i32)
-                -> RayCastOutput {
+    fn ray_cast(
+        &self,
+        input: &RayCastInput,
+        transform: &Transform,
+        child_index: i32,
+    ) -> RayCastOutput {
         unsafe {
             let mut output = mem::zeroed();
-            ffi::Shape_ray_cast_virtual(self.base_ptr(),
-                                        &mut output,
-                                        input,
-                                        transform,
-                                        child_index);
+            ffi::Shape_ray_cast_virtual(
+                self.base_ptr(),
+                &mut output,
+                input,
+                transform,
+                child_index,
+            );
             output
         }
     }
@@ -144,31 +147,49 @@ impl Shape for UnknownShape {}
 
 #[doc(hidden)]
 pub mod ffi {
-    use common::math::{Vec2, Transform};
-    use collision::{AABB, RayCastInput, RayCastOutput};
-    use super::{ShapeType, MassData};
+    use super::{MassData, ShapeType};
+    use collision::{RayCastInput, RayCastOutput, AABB};
+    use common::math::{Transform, Vec2};
 
     pub enum Shape {}
 
-    extern "C" {
-        pub fn Shape_get_type(slf: *const Shape) -> ShapeType;
-        pub fn Shape_get_child_count_virtual(slf: *const Shape) -> i32;
-        pub fn Shape_test_point_virtual(slf: *const Shape,
-                                        xf: *const Transform,
-                                        p: *const Vec2)
-                                        -> bool;
-        pub fn Shape_ray_cast_virtual(slf: *const Shape,
-                                      output: *mut RayCastOutput,
-                                      input: *const RayCastInput,
-                                      transform: *const Transform,
-                                      child_index: i32)
-                                      -> bool;
-        pub fn Shape_compute_aabb_virtual(slf: *const Shape,
-                                          aabb: *mut AABB,
-                                          xf: *const Transform,
-                                          child_id: i32);
-        pub fn Shape_compute_mass_virtual(slf: *const Shape, data: *mut MassData, density: f32);
-        pub fn Shape_get_radius(slf: *const Shape) -> f32;
-        pub fn Shape_set_radius(slf: *mut Shape, radius: f32);
+    pub fn Shape_get_type(slf: *const Shape) -> ShapeType {
+        todo!()
+    }
+    pub fn Shape_get_child_count_virtual(slf: *const Shape) -> i32 {
+        todo!()
+    }
+    pub fn Shape_test_point_virtual(
+        slf: *const Shape,
+        xf: *const Transform,
+        p: *const Vec2,
+    ) -> bool {
+        todo!()
+    }
+    pub fn Shape_ray_cast_virtual(
+        slf: *const Shape,
+        output: *mut RayCastOutput,
+        input: *const RayCastInput,
+        transform: *const Transform,
+        child_index: i32,
+    ) -> bool {
+        todo!()
+    }
+    pub fn Shape_compute_aabb_virtual(
+        slf: *const Shape,
+        aabb: *mut AABB,
+        xf: *const Transform,
+        child_id: i32,
+    ) {
+        todo!()
+    }
+    pub fn Shape_compute_mass_virtual(slf: *const Shape, data: *mut MassData, density: f32) {
+        todo!()
+    }
+    pub fn Shape_get_radius(slf: *const Shape) -> f32 {
+        todo!()
+    }
+    pub fn Shape_set_radius(slf: *mut Shape, radius: f32) {
+        todo!()
     }
 }

@@ -1,8 +1,8 @@
-use wrap::*;
 use common::math::Vec2;
+use dynamics::joints::{Joint, JointDef, JointType};
+use dynamics::world::{BodyHandle, World};
 use user_data::UserDataTypes;
-use dynamics::world::{World, BodyHandle};
-use dynamics::joints::{Joint, JointType, JointDef};
+use wrap::*;
 
 pub struct MouseJointDef {
     pub body_a: BodyHandle,
@@ -30,24 +30,28 @@ impl MouseJointDef {
 
 impl JointDef for MouseJointDef {
     fn joint_type() -> JointType
-        where Self: Sized
+    where
+        Self: Sized,
     {
         JointType::Mouse
     }
 
     unsafe fn create<U: UserDataTypes>(&self, world: &mut World<U>) -> *mut ffi::Joint {
-        self.try_create(world).expect("joint create failed: invalid body handle")
+        self.try_create(world)
+            .expect("joint create failed: invalid body handle")
     }
 
     unsafe fn try_create<U: UserDataTypes>(&self, world: &mut World<U>) -> Option<*mut ffi::Joint> {
-        Some(ffi::World_create_mouse_joint(world.mut_ptr(),
-                                           world.try_body_mut(self.body_a)?.mut_ptr(),
-                                           world.try_body_mut(self.body_b)?.mut_ptr(),
-                                           self.collide_connected,
-                                           self.target,
-                                           self.max_force,
-                                           self.frequency,
-                                           self.damping_ratio))
+        Some(ffi::World_create_mouse_joint(
+            world.mut_ptr(),
+            world.try_body_mut(self.body_a)?.mut_ptr(),
+            world.try_body_mut(self.body_b)?.mut_ptr(),
+            self.collide_connected,
+            self.target,
+            self.max_force,
+            self.frequency,
+            self.damping_ratio,
+        ))
     }
 }
 
@@ -95,32 +99,53 @@ impl MouseJoint {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use dynamics::world::ffi::World;
+    use common::math::Vec2;
     pub use dynamics::body::ffi::Body;
     pub use dynamics::joints::ffi::Joint;
-    use common::math::Vec2;
+    pub use dynamics::world::ffi::World;
 
     pub enum MouseJoint {}
 
-    extern "C" {
-        pub fn World_create_mouse_joint(world: *mut World,
-                                        body_a: *mut Body,
-                                        body_b: *mut Body,
-                                        collide_connected: bool,
-                                        target: Vec2,
-                                        max_force: f32,
-                                        frequency: f32,
-                                        damping_ratio: f32)
-                                        -> *mut Joint;
-        pub fn MouseJoint_as_joint(slf: *mut MouseJoint) -> *mut Joint;
-        pub fn Joint_as_mouse_joint(slf: *mut Joint) -> *mut MouseJoint;
-        pub fn MouseJoint_set_target(slf: *mut MouseJoint, target: *const Vec2);
-        pub fn MouseJoint_get_target(slf: *const MouseJoint) -> *const Vec2;
-        pub fn MouseJoint_set_max_force(slf: *mut MouseJoint, force: f32);
-        pub fn MouseJoint_get_max_force(slf: *const MouseJoint) -> f32;
-        pub fn MouseJoint_set_frequency(slf: *mut MouseJoint, hz: f32);
-        pub fn MouseJoint_get_frequency(slf: *const MouseJoint) -> f32;
-        pub fn MouseJoint_set_damping_ratio(slf: *mut MouseJoint, ratio: f32);
-        pub fn MouseJoint_get_damping_ratio(slf: *const MouseJoint) -> f32;
+    pub fn World_create_mouse_joint(
+        world: *mut World,
+        body_a: *mut Body,
+        body_b: *mut Body,
+        collide_connected: bool,
+        target: Vec2,
+        max_force: f32,
+        frequency: f32,
+        damping_ratio: f32,
+    ) -> *mut Joint {
+        todo!()
+    }
+    pub fn MouseJoint_as_joint(slf: *mut MouseJoint) -> *mut Joint {
+        todo!()
+    }
+    pub fn Joint_as_mouse_joint(slf: *mut Joint) -> *mut MouseJoint {
+        todo!()
+    }
+    pub fn MouseJoint_set_target(slf: *mut MouseJoint, target: *const Vec2) {
+        todo!()
+    }
+    pub fn MouseJoint_get_target(slf: *const MouseJoint) -> *const Vec2 {
+        todo!()
+    }
+    pub fn MouseJoint_set_max_force(slf: *mut MouseJoint, force: f32) {
+        todo!()
+    }
+    pub fn MouseJoint_get_max_force(slf: *const MouseJoint) -> f32 {
+        todo!()
+    }
+    pub fn MouseJoint_set_frequency(slf: *mut MouseJoint, hz: f32) {
+        todo!()
+    }
+    pub fn MouseJoint_get_frequency(slf: *const MouseJoint) -> f32 {
+        todo!()
+    }
+    pub fn MouseJoint_set_damping_ratio(slf: *mut MouseJoint, ratio: f32) {
+        todo!()
+    }
+    pub fn MouseJoint_get_damping_ratio(slf: *const MouseJoint) -> f32 {
+        todo!()
     }
 }

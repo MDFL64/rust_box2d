@@ -40,12 +40,11 @@ pub use self::rope::{RopeJoint, RopeJointDef};
 pub use self::weld::{WeldJoint, WeldJointDef};
 pub use self::wheel::{WheelJoint, WheelJointDef};
 
-
-use std::ops::{Deref, DerefMut};
-use wrap::*;
 use common::math::Vec2;
-use dynamics::world::{World, BodyHandle, JointHandle};
-use user_data::{UserDataTypes, UserData, RawUserData, RawUserDataMut, InternalUserData};
+use dynamics::world::{BodyHandle, JointHandle, World};
+use std::ops::{Deref, DerefMut};
+use user_data::{InternalUserData, RawUserData, RawUserDataMut, UserData, UserDataTypes};
+use wrap::*;
 
 #[repr(C)]
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -74,11 +73,13 @@ pub enum LimitState {
 }
 
 pub trait JointDef {
-    fn joint_type() -> JointType where Self: Sized;
+    fn joint_type() -> JointType
+    where
+        Self: Sized;
 
     #[doc(hidden)]
     unsafe fn create<U: UserDataTypes>(&self, world: &mut World<U>) -> *mut ffi::Joint;
-    
+
     #[doc(hidden)]
     unsafe fn try_create<U: UserDataTypes>(&self, world: &mut World<U>) -> Option<*mut ffi::Joint> {
         Some(self.create(world))
@@ -133,8 +134,10 @@ pub trait Joint: WrappedBase<ffi::Joint> + FromFFI<ffi::Joint> {
     fn handle(&self) -> JointHandle {
         unsafe { self.base_ptr().handle() }
     }
-    
-    fn assumed_type() -> JointType where Self: Sized;
+
+    fn assumed_type() -> JointType
+    where
+        Self: Sized;
 
     fn get_type(&self) -> JointType {
         unsafe { ffi::Joint_get_type(self.base_ptr()) }
@@ -273,29 +276,48 @@ impl Joint for UnknownJoint {
     }
 }
 
-
 #[doc(hidden)]
 pub mod ffi {
-    pub use ffi::Any;
-    pub use dynamics::body::ffi::Body;
-    use common::math::Vec2;
     use super::JointType;
+    use common::math::Vec2;
+    pub use dynamics::body::ffi::Body;
+    pub use ffi::Any;
 
     pub enum Joint {}
 
-    extern "C" {
-        pub fn Joint_get_type(slf: *const Joint) -> JointType;
-        pub fn Joint_get_body_a(slf: *mut Joint) -> *mut Body;
-        pub fn Joint_get_body_b(slf: *mut Joint) -> *mut Body;
-        pub fn Joint_get_anchor_a_virtual(slf: *const Joint) -> Vec2;
-        pub fn Joint_get_anchor_b_virtual(slf: *const Joint) -> Vec2;
-        pub fn Joint_get_reaction_force_virtual(slf: *const Joint) -> Vec2;
-        pub fn Joint_get_reaction_torque_virtual(slf: *const Joint) -> f32;
-        // pub fn Joint_get_next(slf: *mut Joint) -> *mut Joint;
-        // pub fn Joint_get_next_const(slf: *const Joint) -> *const Joint;
-        pub fn Joint_is_active(slf: *const Joint) -> bool;
-        pub fn Joint_get_collide_connected(slf: *const Joint) -> bool;
-        pub fn Joint_dump_virtual(slf: *mut Joint);
-        pub fn Joint_shift_origin_virtual(slf: *mut Joint, origin: *const Vec2);
+    pub fn Joint_get_type(slf: *const Joint) -> JointType {
+        todo!()
+    }
+    pub fn Joint_get_body_a(slf: *mut Joint) -> *mut Body {
+        todo!()
+    }
+    pub fn Joint_get_body_b(slf: *mut Joint) -> *mut Body {
+        todo!()
+    }
+    pub fn Joint_get_anchor_a_virtual(slf: *const Joint) -> Vec2 {
+        todo!()
+    }
+    pub fn Joint_get_anchor_b_virtual(slf: *const Joint) -> Vec2 {
+        todo!()
+    }
+    pub fn Joint_get_reaction_force_virtual(slf: *const Joint) -> Vec2 {
+        todo!()
+    }
+    pub fn Joint_get_reaction_torque_virtual(slf: *const Joint) -> f32 {
+        todo!()
+    }
+    // pub fn Joint_get_next(slf: *mut Joint) -> *mut Joint {todo!()}
+    // pub fn Joint_get_next_const(slf: *const Joint) -> *const Joint {todo!()}
+    pub fn Joint_is_active(slf: *const Joint) -> bool {
+        todo!()
+    }
+    pub fn Joint_get_collide_connected(slf: *const Joint) -> bool {
+        todo!()
+    }
+    pub fn Joint_dump_virtual(slf: *mut Joint) {
+        todo!()
+    }
+    pub fn Joint_shift_origin_virtual(slf: *mut Joint, origin: *const Vec2) {
+        todo!()
     }
 }

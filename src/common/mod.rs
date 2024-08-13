@@ -1,8 +1,8 @@
 pub mod math;
 pub mod settings;
 
+use common::math::{Transform, Vec2};
 use std::mem;
-use common::math::{Vec2, Transform};
 
 #[repr(C)]
 #[derive(Clone, PartialEq, Debug)]
@@ -50,50 +50,60 @@ pub trait Draw {
     fn draw_segment(&mut self, p1: &Vec2, p2: &Vec2, color: &Color);
     fn draw_transform(&mut self, xf: &Transform);
 }
- 
-unsafe extern "C" fn draw_polygon<D: Draw>(object: ffi::Any,
-                                           vertices: *const Vec2,
-                                           count: i32,
-                                           color: *const Color) {
+
+unsafe extern "C" fn draw_polygon<D: Draw>(
+    object: ffi::Any,
+    vertices: *const Vec2,
+    count: i32,
+    color: *const Color,
+) {
     // color comes from a C++ &
     let draw = mem::transmute::<_, &mut D>(object);
     let vertices = ::std::slice::from_raw_parts(vertices, count as usize);
     draw.draw_polygon(vertices, &*color)
 }
 
-unsafe extern "C" fn draw_solid_polygon<D: Draw>(object: ffi::Any,
-                                                 vertices: *const Vec2,
-                                                 count: i32,
-                                                 color: *const Color) {
+unsafe extern "C" fn draw_solid_polygon<D: Draw>(
+    object: ffi::Any,
+    vertices: *const Vec2,
+    count: i32,
+    color: *const Color,
+) {
     // color comes from a C++ &
     let draw = mem::transmute::<_, &mut D>(object);
     let vertices = ::std::slice::from_raw_parts(vertices, count as usize);
     draw.draw_solid_polygon(vertices, &*color)
 }
 
-unsafe extern "C" fn draw_circle<D: Draw>(object: ffi::Any,
-                                     center: *const Vec2,
-                                     radius: f32,
-                                     color: *const Color) {
+unsafe extern "C" fn draw_circle<D: Draw>(
+    object: ffi::Any,
+    center: *const Vec2,
+    radius: f32,
+    color: *const Color,
+) {
     // center and color are coming from C++ &s
     let draw = mem::transmute::<_, &mut D>(object);
     draw.draw_circle(&*center, radius, &*color)
 }
 
-unsafe extern "C" fn draw_solid_circle<D: Draw>(object: ffi::Any,
-                                                center: *const Vec2,
-                                                radius: f32,
-                                                axis: *const Vec2,
-                                                color: *const Color) {
+unsafe extern "C" fn draw_solid_circle<D: Draw>(
+    object: ffi::Any,
+    center: *const Vec2,
+    radius: f32,
+    axis: *const Vec2,
+    color: *const Color,
+) {
     // center, axis and color are coming from C++ &s
     let draw = mem::transmute::<_, &mut D>(object);
     draw.draw_solid_circle(&*center, radius, &*axis, &*color)
 }
 
-unsafe extern "C" fn draw_segment<D: Draw>(object: ffi::Any,
-                                           p1: *const Vec2,
-                                           p2: *const Vec2,
-                                           color: *const Color) {
+unsafe extern "C" fn draw_segment<D: Draw>(
+    object: ffi::Any,
+    p1: *const Vec2,
+    p2: *const Vec2,
+    color: *const Color,
+) {
     // p1, p2 and color are coming from C++ &s
     let draw = mem::transmute::<_, &mut D>(object);
     draw.draw_segment(&*p1, &*p2, &*color)
@@ -117,17 +127,17 @@ impl DrawLink {
         }
     }
 
-    pub unsafe fn use_with<D: Draw>(&mut self,
-                                    draw: &mut D,
-                                    flags: DrawFlags) -> *mut ffi::Draw {
-        ffi::DrawLink_bind(self.ptr,
-                           mem::transmute(draw),
-                           draw_polygon::<D>,
-                           draw_solid_polygon::<D>,
-                           draw_circle::<D>,
-                           draw_solid_circle::<D>,
-                           draw_segment::<D>,
-                           draw_transform::<D>);
+    pub unsafe fn use_with<D: Draw>(&mut self, draw: &mut D, flags: DrawFlags) -> *mut ffi::Draw {
+        ffi::DrawLink_bind(
+            self.ptr,
+            mem::transmute(draw),
+            draw_polygon::<D>,
+            draw_solid_polygon::<D>,
+            draw_circle::<D>,
+            draw_solid_circle::<D>,
+            draw_segment::<D>,
+            draw_transform::<D>,
+        );
         ffi::DrawLink_set_flags(self.ptr, flags);
         ffi::DrawLink_as_base(self.ptr)
     }
@@ -141,41 +151,35 @@ impl Drop for DrawLink {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use ffi::{Any, FatAny};
-    use common::math::{Vec2, Transform};
     use super::{Color, DrawFlags};
+    use common::math::{Transform, Vec2};
+    pub use ffi::{Any, FatAny};
 
     pub enum Draw {}
     pub enum DrawLink {}
 
-    extern "C" {
-        pub fn DrawLink_alloc() -> *mut DrawLink;
-        pub fn DrawLink_as_base(slf: *mut DrawLink) -> *mut Draw;
-        pub fn DrawLink_drop(slf: *mut DrawLink);
-        pub fn DrawLink_bind(slf: *mut DrawLink,
-                             object: Any,
-                             draw_polygon: unsafe extern "C" fn(Any,
-                                                                *const Vec2,
-                                                                i32,
-                                                                *const Color),
-                             draw_solid_polygon: unsafe extern "C" fn(Any,
-                                                                      *const Vec2,
-                                                                      i32,
-                                                                      *const Color),
-                             draw_circle: unsafe extern "C" fn(Any,
-                                                               *const Vec2,
-                                                               f32,
-                                                               *const Color),
-                             draw_solid_circle: unsafe extern "C" fn(Any,
-                                                                     *const Vec2,
-                                                                     f32,
-                                                                     *const Vec2,
-                                                                     *const Color),
-                             draw_segment: unsafe extern "C" fn(Any,
-                                                                *const Vec2,
-                                                                *const Vec2,
-                                                                *const Color),
-                             draw_transform: unsafe extern "C" fn(Any, *const Transform));
-        pub fn DrawLink_set_flags(slf: *mut DrawLink, flags: DrawFlags);
+    pub fn DrawLink_alloc() -> *mut DrawLink {
+        todo!()
+    }
+    pub fn DrawLink_as_base(slf: *mut DrawLink) -> *mut Draw {
+        todo!()
+    }
+    pub fn DrawLink_drop(slf: *mut DrawLink) {
+        todo!()
+    }
+    pub fn DrawLink_bind(
+        slf: *mut DrawLink,
+        object: Any,
+        draw_polygon: unsafe extern "C" fn(Any, *const Vec2, i32, *const Color),
+        draw_solid_polygon: unsafe extern "C" fn(Any, *const Vec2, i32, *const Color),
+        draw_circle: unsafe extern "C" fn(Any, *const Vec2, f32, *const Color),
+        draw_solid_circle: unsafe extern "C" fn(Any, *const Vec2, f32, *const Vec2, *const Color),
+        draw_segment: unsafe extern "C" fn(Any, *const Vec2, *const Vec2, *const Color),
+        draw_transform: unsafe extern "C" fn(Any, *const Transform),
+    ) {
+        todo!()
+    }
+    pub fn DrawLink_set_flags(slf: *mut DrawLink, flags: DrawFlags) {
+        todo!()
     }
 }

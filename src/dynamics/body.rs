@@ -1,17 +1,17 @@
-use std::mem;
-use std::ptr;
-use std::ops::{Deref, DerefMut};
+use collision::shapes::{MassData, Shape};
+use common::math::{Transform, Vec2};
+use dynamics::contacts::{Contact, ContactEdge};
+use dynamics::fixture::{Fixture, FixtureDef, MetaFixture};
+use dynamics::joints::JointEdge;
+use dynamics::world::{BodyHandle, JointHandle};
+use handle::*;
 use std::cell::{Ref, RefMut};
 use std::marker::PhantomData;
+use std::mem;
+use std::ops::{Deref, DerefMut};
+use std::ptr;
+use user_data::{InternalUserData, RawUserData, RawUserDataMut, UserData, UserDataTypes};
 use wrap::*;
-use handle::*;
-use common::math::{Vec2, Transform};
-use collision::shapes::{MassData, Shape};
-use dynamics::world::{BodyHandle, JointHandle};
-use dynamics::joints::JointEdge;
-use dynamics::fixture::{Fixture, MetaFixture, FixtureDef};
-use dynamics::contacts::{ContactEdge, Contact};
-use user_data::{UserDataTypes, UserData, InternalUserData, RawUserData, RawUserDataMut};
 
 #[repr(C)]
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -87,37 +87,43 @@ impl<U: UserDataTypes> MetaBody<U> {
     }
 
     pub fn create_fixture(&mut self, shape: &dyn Shape, def: &mut FixtureDef) -> FixtureHandle
-        where U::FixtureData: Default
+    where
+        U::FixtureData: Default,
     {
         self.create_fixture_with(shape, def, U::FixtureData::default())
     }
 
-    pub fn create_fixture_with(&mut self,
-                               shape: &dyn Shape,
-                               def: &mut FixtureDef,
-                               data: U::FixtureData)
-                               -> FixtureHandle {
+    pub fn create_fixture_with(
+        &mut self,
+        shape: &dyn Shape,
+        def: &mut FixtureDef,
+        data: U::FixtureData,
+    ) -> FixtureHandle {
         unsafe {
             def.shape = shape.base_ptr();
             let fixture = ffi::Body_create_fixture(self.mut_ptr(), def);
-            self.fixtures.insert_with(|h| MetaFixture::new(fixture, h, data))
+            self.fixtures
+                .insert_with(|h| MetaFixture::new(fixture, h, data))
         }
     }
 
     pub fn create_fast_fixture(&mut self, shape: &dyn Shape, density: f32) -> FixtureHandle
-        where U::FixtureData: Default
+    where
+        U::FixtureData: Default,
     {
         self.create_fast_fixture_with(shape, density, U::FixtureData::default())
     }
 
-    pub fn create_fast_fixture_with(&mut self,
-                                    shape: &dyn Shape,
-                                    density: f32,
-                                    data: U::FixtureData)
-                                    -> FixtureHandle {
+    pub fn create_fast_fixture_with(
+        &mut self,
+        shape: &dyn Shape,
+        density: f32,
+        data: U::FixtureData,
+    ) -> FixtureHandle {
         unsafe {
             let fixture = ffi::Body_create_fast_fixture(self.mut_ptr(), shape.base_ptr(), density);
-            self.fixtures.insert_with(|h| MetaFixture::new(fixture, h, data))
+            self.fixtures
+                .insert_with(|h| MetaFixture::new(fixture, h, data))
         }
     }
 
@@ -126,7 +132,9 @@ impl<U: UserDataTypes> MetaBody<U> {
     }
 
     pub fn fixture_mut(&self, handle: FixtureHandle) -> RefMut<MetaFixture<U>> {
-        self.fixtures.get_mut(handle).expect("invalid fixture handle")
+        self.fixtures
+            .get_mut(handle)
+            .expect("invalid fixture handle")
     }
 
     pub fn try_fixture(&self, handle: FixtureHandle) -> Option<Ref<MetaFixture<U>>> {
@@ -198,7 +206,7 @@ impl Body {
     pub fn handle(&self) -> BodyHandle {
         unsafe { self.ptr().handle() }
     }
-    
+
     pub fn transform<'a>(&'a self) -> &'a Transform {
         unsafe {
             &*ffi::Body_get_transform(self.ptr()) // Comes from a C++ &
@@ -408,15 +416,17 @@ pub struct JointIter<'a> {
 
 impl<'a> Iterator for JointIter<'a> {
     type Item = (BodyHandle, JointHandle);
-    
+
     fn next(&mut self) -> Option<Self::Item> {
-        unsafe { match self.edge.as_ref() {
-            None => None,
-            Some(edge) => {
-                self.edge = edge.next;
-                Some((edge.other.handle(), edge.joint.handle()))
+        unsafe {
+            match self.edge.as_ref() {
+                None => None,
+                Some(edge) => {
+                    self.edge = edge.next;
+                    Some((edge.other.handle(), edge.joint.handle()))
+                }
             }
-        } }
+        }
     }
 }
 
@@ -427,15 +437,20 @@ pub struct ContactIter<'a> {
 
 impl<'a> Iterator for ContactIter<'a> {
     type Item = (BodyHandle, WrappedRef<'a, Contact>);
-    
+
     fn next(&mut self) -> Option<Self::Item> {
-        unsafe { match self.edge.as_ref() {
-            None => None,
-            Some(edge) => {
-                self.edge = edge.next;
-                Some((edge.other.handle(), WrappedRef::new(Contact::from_ffi(edge.contact))))
+        unsafe {
+            match self.edge.as_ref() {
+                None => None,
+                Some(edge) => {
+                    self.edge = edge.next;
+                    Some((
+                        edge.other.handle(),
+                        WrappedRef::new(Contact::from_ffi(edge.contact)),
+                    ))
+                }
             }
-        } }
+        }
     }
 }
 
@@ -446,103 +461,206 @@ pub struct ContactIterMut<'a> {
 
 impl<'a> Iterator for ContactIterMut<'a> {
     type Item = (BodyHandle, WrappedRefMut<'a, Contact>);
-    
+
     fn next(&mut self) -> Option<Self::Item> {
-        unsafe { match self.edge.as_mut() {
-            None => None,
-            Some(ref mut edge) => {
-                self.edge = edge.next;
-                Some((edge.other.handle(), WrappedRefMut::new(Contact::from_ffi(edge.contact))))
+        unsafe {
+            match self.edge.as_mut() {
+                None => None,
+                Some(ref mut edge) => {
+                    self.edge = edge.next;
+                    Some((
+                        edge.other.handle(),
+                        WrappedRefMut::new(Contact::from_ffi(edge.contact)),
+                    ))
+                }
             }
-        } }
+        }
     }
 }
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use ffi::Any;
+    use super::BodyType;
     pub use collision::shapes::ffi::Shape;
-    pub use dynamics::fixture::ffi::Fixture;
-    use common::math::{Vec2, Transform};
     use collision::shapes::MassData;
+    use common::math::{Transform, Vec2};
+    use dynamics::contacts::ContactEdge;
+    pub use dynamics::fixture::ffi::Fixture;
     use dynamics::fixture::FixtureDef;
     use dynamics::joints::JointEdge;
-    use dynamics::contacts::ContactEdge;
-    use super::BodyType;
+    pub use ffi::Any;
 
     pub enum Body {}
 
-    extern "C" {
-        pub fn Body_create_fixture(slf: *mut Body, def: *const FixtureDef) -> *mut Fixture;
-        pub fn Body_create_fast_fixture(slf: *mut Body,
-                                        shape: *const Shape,
-                                        density: f32)
-                                        -> *mut Fixture;
-        pub fn Body_destroy_fixture(slf: *mut Body, fixture: *mut Fixture);
-        pub fn Body_set_transform(slf: *mut Body, pos: *const Vec2, angle: f32);
-        pub fn Body_get_transform(slf: *const Body) -> *const Transform;
-        pub fn Body_get_position(slf: *const Body) -> *const Vec2;
-        pub fn Body_get_angle(slf: *const Body) -> f32;
-        pub fn Body_get_world_center(slf: *const Body) -> *const Vec2;
-        pub fn Body_get_local_center(slf: *const Body) -> *const Vec2;
-        pub fn Body_set_linear_velocity(slf: *mut Body, v: *const Vec2);
-        pub fn Body_get_linear_velocity(slf: *const Body) -> *const Vec2;
-        pub fn Body_set_angular_velocity(slf: *mut Body, omega: f32);
-        pub fn Body_get_angular_velocity(slf: *const Body) -> f32;
-        pub fn Body_apply_force(slf: *mut Body,
-                                force: *const Vec2,
-                                point: *const Vec2,
-                                wake: bool);
-        pub fn Body_apply_force_to_center(slf: *mut Body, force: *const Vec2, wake: bool);
-        pub fn Body_apply_torque(slf: *mut Body, torque: f32, wake: bool);
-        pub fn Body_apply_linear_impulse(slf: *mut Body,
-                                         impulse: *const Vec2,
-                                         point: *const Vec2,
-                                         wake: bool);
-        pub fn Body_apply_angular_impulse(slf: *mut Body, impulse: f32, wake: bool);
-        pub fn Body_get_mass(slf: *const Body) -> f32;
-        pub fn Body_get_inertia(slf: *const Body) -> f32;
-        pub fn Body_get_mass_data(slf: *const Body, data: *mut MassData);
-        pub fn Body_set_mass_data(slf: *mut Body, data: *const MassData);
-        pub fn Body_reset_mass_data(slf: *mut Body);
-        pub fn Body_get_world_point(slf: *const Body, local: *const Vec2) -> Vec2;
-        pub fn Body_get_world_vector(slf: *const Body, local: *const Vec2) -> Vec2;
-        pub fn Body_get_local_point(slf: *const Body, world: *const Vec2) -> Vec2;
-        pub fn Body_get_local_vector(slf: *const Body, world: *const Vec2) -> Vec2;
-        pub fn Body_get_linear_velocity_from_world_point(slf: *const Body,
-                                                         point: *const Vec2)
-                                                         -> Vec2;
-        pub fn Body_get_linear_velocity_from_local_point(slf: *const Body,
-                                                         point: *const Vec2)
-                                                         -> Vec2;
-        pub fn Body_get_linear_damping(slf: *const Body) -> f32;
-        pub fn Body_set_linear_damping(slf: *mut Body, damping: f32);
-        pub fn Body_get_angular_damping(slf: *const Body) -> f32;
-        pub fn Body_set_angular_damping(slf: *mut Body, damping: f32);
-        pub fn Body_get_gravity_scale(slf: *const Body) -> f32;
-        pub fn Body_set_gravity_scale(slf: *mut Body, scale: f32);
-        pub fn Body_set_type(slf: *mut Body, typ: BodyType);
-        pub fn Body_get_type(slf: *const Body) -> BodyType;
-        pub fn Body_set_bullet(slf: *mut Body, flag: bool);
-        pub fn Body_is_bullet(slf: *const Body) -> bool;
-        pub fn Body_set_sleeping_allowed(slf: *mut Body, flag: bool);
-        pub fn Body_is_sleeping_allowed(slf: *const Body) -> bool;
-        pub fn Body_set_awake(slf: *mut Body, flag: bool);
-        pub fn Body_is_awake(slf: *const Body) -> bool;
-        pub fn Body_set_active(slf: *mut Body, flag: bool);
-        pub fn Body_is_active(slf: *const Body) -> bool;
-        pub fn Body_set_fixed_rotation(slf: *mut Body, flag: bool);
-        pub fn Body_is_fixed_rotation(slf: *const Body) -> bool;
-        // pub fn Body_get_fixture_list(slf: *mut Body) -> *mut Fixture;
-        // pub fn Body_get_fixture_list_const(slf: *const Body) -> *const Fixture;
-        pub fn Body_get_joint_list(slf: *mut Body) -> *mut JointEdge;
-        pub fn Body_get_joint_list_const(slf: *const Body) -> *const JointEdge;
-        pub fn Body_get_contact_list(slf: *mut Body) -> *mut ContactEdge;
-        pub fn Body_get_contact_list_const(slf: *const Body) -> *const ContactEdge;
-        // pub fn Body_get_next(slf: *mut Body) -> *mut Body;
-        // pub fn Body_get_next_const(slf: *const Body) -> *const Body;
-        // pub fn Body_get_world(slf: *mut Body) -> *mut World;
-        // pub fn Body_get_world_const(slf: *const Body) -> *const World;
-        pub fn Body_dump(slf: *mut Body);
+    pub fn Body_create_fixture(slf: *mut Body, def: *const FixtureDef) -> *mut Fixture {
+        todo!()
+    }
+    pub fn Body_create_fast_fixture(
+        slf: *mut Body,
+        shape: *const Shape,
+        density: f32,
+    ) -> *mut Fixture {
+        todo!()
+    }
+    pub fn Body_destroy_fixture(slf: *mut Body, fixture: *mut Fixture) {
+        todo!()
+    }
+    pub fn Body_set_transform(slf: *mut Body, pos: *const Vec2, angle: f32) {
+        todo!()
+    }
+    pub fn Body_get_transform(slf: *const Body) -> *const Transform {
+        todo!()
+    }
+    pub fn Body_get_position(slf: *const Body) -> *const Vec2 {
+        todo!()
+    }
+    pub fn Body_get_angle(slf: *const Body) -> f32 {
+        todo!()
+    }
+    pub fn Body_get_world_center(slf: *const Body) -> *const Vec2 {
+        todo!()
+    }
+    pub fn Body_get_local_center(slf: *const Body) -> *const Vec2 {
+        todo!()
+    }
+    pub fn Body_set_linear_velocity(slf: *mut Body, v: *const Vec2) {
+        todo!()
+    }
+    pub fn Body_get_linear_velocity(slf: *const Body) -> *const Vec2 {
+        todo!()
+    }
+    pub fn Body_set_angular_velocity(slf: *mut Body, omega: f32) {
+        todo!()
+    }
+    pub fn Body_get_angular_velocity(slf: *const Body) -> f32 {
+        todo!()
+    }
+    pub fn Body_apply_force(slf: *mut Body, force: *const Vec2, point: *const Vec2, wake: bool) {
+        todo!()
+    }
+    pub fn Body_apply_force_to_center(slf: *mut Body, force: *const Vec2, wake: bool) {
+        todo!()
+    }
+    pub fn Body_apply_torque(slf: *mut Body, torque: f32, wake: bool) {
+        todo!()
+    }
+    pub fn Body_apply_linear_impulse(
+        slf: *mut Body,
+        impulse: *const Vec2,
+        point: *const Vec2,
+        wake: bool,
+    ) {
+        todo!()
+    }
+    pub fn Body_apply_angular_impulse(slf: *mut Body, impulse: f32, wake: bool) {
+        todo!()
+    }
+    pub fn Body_get_mass(slf: *const Body) -> f32 {
+        todo!()
+    }
+    pub fn Body_get_inertia(slf: *const Body) -> f32 {
+        todo!()
+    }
+    pub fn Body_get_mass_data(slf: *const Body, data: *mut MassData) {
+        todo!()
+    }
+    pub fn Body_set_mass_data(slf: *mut Body, data: *const MassData) {
+        todo!()
+    }
+    pub fn Body_reset_mass_data(slf: *mut Body) {
+        todo!()
+    }
+    pub fn Body_get_world_point(slf: *const Body, local: *const Vec2) -> Vec2 {
+        todo!()
+    }
+    pub fn Body_get_world_vector(slf: *const Body, local: *const Vec2) -> Vec2 {
+        todo!()
+    }
+    pub fn Body_get_local_point(slf: *const Body, world: *const Vec2) -> Vec2 {
+        todo!()
+    }
+    pub fn Body_get_local_vector(slf: *const Body, world: *const Vec2) -> Vec2 {
+        todo!()
+    }
+    pub fn Body_get_linear_velocity_from_world_point(slf: *const Body, point: *const Vec2) -> Vec2 {
+        todo!()
+    }
+    pub fn Body_get_linear_velocity_from_local_point(slf: *const Body, point: *const Vec2) -> Vec2 {
+        todo!()
+    }
+    pub fn Body_get_linear_damping(slf: *const Body) -> f32 {
+        todo!()
+    }
+    pub fn Body_set_linear_damping(slf: *mut Body, damping: f32) {
+        todo!()
+    }
+    pub fn Body_get_angular_damping(slf: *const Body) -> f32 {
+        todo!()
+    }
+    pub fn Body_set_angular_damping(slf: *mut Body, damping: f32) {
+        todo!()
+    }
+    pub fn Body_get_gravity_scale(slf: *const Body) -> f32 {
+        todo!()
+    }
+    pub fn Body_set_gravity_scale(slf: *mut Body, scale: f32) {
+        todo!()
+    }
+    pub fn Body_set_type(slf: *mut Body, typ: BodyType) {
+        todo!()
+    }
+    pub fn Body_get_type(slf: *const Body) -> BodyType {
+        todo!()
+    }
+    pub fn Body_set_bullet(slf: *mut Body, flag: bool) {
+        todo!()
+    }
+    pub fn Body_is_bullet(slf: *const Body) -> bool {
+        todo!()
+    }
+    pub fn Body_set_sleeping_allowed(slf: *mut Body, flag: bool) {
+        todo!()
+    }
+    pub fn Body_is_sleeping_allowed(slf: *const Body) -> bool {
+        todo!()
+    }
+    pub fn Body_set_awake(slf: *mut Body, flag: bool) {
+        todo!()
+    }
+    pub fn Body_is_awake(slf: *const Body) -> bool {
+        todo!()
+    }
+    pub fn Body_set_active(slf: *mut Body, flag: bool) {
+        todo!()
+    }
+    pub fn Body_is_active(slf: *const Body) -> bool {
+        todo!()
+    }
+    pub fn Body_set_fixed_rotation(slf: *mut Body, flag: bool) {
+        todo!()
+    }
+    pub fn Body_is_fixed_rotation(slf: *const Body) -> bool {
+        todo!()
+    }
+    // pub fn Body_get_fixture_list(slf: *mut Body) -> *mut Fixture {todo!()}
+    // pub fn Body_get_fixture_list_const(slf: *const Body) -> *const Fixture {todo!()}
+    pub fn Body_get_joint_list(slf: *mut Body) -> *mut JointEdge {
+        todo!()
+    }
+    pub fn Body_get_joint_list_const(slf: *const Body) -> *const JointEdge {
+        todo!()
+    }
+    pub fn Body_get_contact_list(slf: *mut Body) -> *mut ContactEdge {
+        todo!()
+    }
+    pub fn Body_get_contact_list_const(slf: *const Body) -> *const ContactEdge {
+        todo!()
+    }
+    // pub fn Body_get_next(slf: *mut Body) -> *mut Body {todo!()}
+    // pub fn Body_get_next_const(slf: *const Body) -> *const Body {todo!()}
+    // pub fn Body_get_world(slf: *mut Body) -> *mut World {todo!()}
+    // pub fn Body_get_world_const(slf: *const Body) -> *const World {todo!()}
+    pub fn Body_dump(slf: *mut Body) {
+        todo!()
     }
 }

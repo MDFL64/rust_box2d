@@ -93,8 +93,8 @@ macro_rules! wrap {
     };
 }
 
-use std::mem;
 use std::marker::PhantomData;
+use std::mem;
 use std::ops::{Deref, DerefMut};
 
 #[doc(hidden)]
@@ -111,7 +111,9 @@ pub trait WrappedBase<B> {
 
 #[doc(hidden)]
 pub trait FromFFI<T> {
-    unsafe fn from_ffi(ptr: *mut T) -> Self where Self: Sized;
+    unsafe fn from_ffi(ptr: *mut T) -> Self
+    where
+        Self: Sized;
 }
 
 pub struct WrappedRefMut<'a, T> {

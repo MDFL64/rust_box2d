@@ -1,8 +1,8 @@
-use wrap::*;
 use common::math::Vec2;
+use dynamics::joints::{Joint, JointDef, JointType};
+use dynamics::world::{BodyHandle, World};
 use user_data::UserDataTypes;
-use dynamics::world::{World, BodyHandle};
-use dynamics::joints::{Joint, JointType, JointDef};
+use wrap::*;
 
 pub struct WheelJointDef {
     pub body_a: BodyHandle,
@@ -35,21 +35,26 @@ impl WheelJointDef {
         }
     }
 
-    pub fn init<U: UserDataTypes>(&mut self,
-                                  world: &World<U>,
-                                  body_a: BodyHandle,
-                                  body_b: BodyHandle,
-                                  anchor: &Vec2,
-                                  axis: &Vec2) {
-        self.try_init(world, body_a, body_b, anchor, axis).expect("joint init filed: invalid body handle");
+    pub fn init<U: UserDataTypes>(
+        &mut self,
+        world: &World<U>,
+        body_a: BodyHandle,
+        body_b: BodyHandle,
+        anchor: &Vec2,
+        axis: &Vec2,
+    ) {
+        self.try_init(world, body_a, body_b, anchor, axis)
+            .expect("joint init filed: invalid body handle");
     }
 
-    pub fn try_init<U: UserDataTypes>(&mut self,
-                                      world: &World<U>,
-                                      body_a: BodyHandle,
-                                      body_b: BodyHandle,
-                                      anchor: &Vec2,
-                                      axis: &Vec2) -> Option<()> {
+    pub fn try_init<U: UserDataTypes>(
+        &mut self,
+        world: &World<U>,
+        body_a: BodyHandle,
+        body_b: BodyHandle,
+        anchor: &Vec2,
+        axis: &Vec2,
+    ) -> Option<()> {
         self.body_a = body_a;
         self.body_b = body_b;
         let a = world.try_body(body_a)?;
@@ -63,28 +68,32 @@ impl WheelJointDef {
 
 impl JointDef for WheelJointDef {
     fn joint_type() -> JointType
-        where Self: Sized
+    where
+        Self: Sized,
     {
         JointType::Wheel
     }
 
     unsafe fn create<U: UserDataTypes>(&self, world: &mut World<U>) -> *mut ffi::Joint {
-        self.try_create(world).expect("joint create failed: invalid body handle")
+        self.try_create(world)
+            .expect("joint create failed: invalid body handle")
     }
 
     unsafe fn try_create<U: UserDataTypes>(&self, world: &mut World<U>) -> Option<*mut ffi::Joint> {
-        Some(ffi::World_create_wheel_joint(world.mut_ptr(),
-                                           world.try_body_mut(self.body_a)?.mut_ptr(),
-                                           world.try_body_mut(self.body_b)?.mut_ptr(),
-                                           self.collide_connected,
-                                           self.local_anchor_a,
-                                           self.local_anchor_b,
-                                           self.local_axis_a,
-                                           self.enable_motor,
-                                           self.max_motor_torque,
-                                           self.motor_speed,
-                                           self.frequency,
-                                           self.damping_ratio))
+        Some(ffi::World_create_wheel_joint(
+            world.mut_ptr(),
+            world.try_body_mut(self.body_a)?.mut_ptr(),
+            world.try_body_mut(self.body_b)?.mut_ptr(),
+            self.collide_connected,
+            self.local_anchor_a,
+            self.local_anchor_b,
+            self.local_axis_a,
+            self.enable_motor,
+            self.max_motor_torque,
+            self.motor_speed,
+            self.frequency,
+            self.damping_ratio,
+        ))
     }
 }
 
@@ -168,44 +177,81 @@ impl WheelJoint {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use dynamics::world::ffi::World;
+    use common::math::Vec2;
     pub use dynamics::body::ffi::Body;
     pub use dynamics::joints::ffi::Joint;
-    use common::math::Vec2;
+    pub use dynamics::world::ffi::World;
 
     pub enum WheelJoint {}
 
-    extern "C" {
-        pub fn World_create_wheel_joint(world: *mut World,
-                                        body_a: *mut Body,
-                                        body_b: *mut Body,
-                                        collide_connected: bool,
-                                        local_anchor_a: Vec2,
-                                        local_anchor_b: Vec2,
-                                        local_axis_a: Vec2,
-                                        enable_motor: bool,
-                                        max_motor_torque: f32,
-                                        motor_speed: f32,
-                                        frequency: f32,
-                                        damping_ratio: f32)
-                                        -> *mut Joint;
-        pub fn WheelJoint_as_joint(slf: *mut WheelJoint) -> *mut Joint;
-        pub fn Joint_as_wheel_joint(slf: *mut Joint) -> *mut WheelJoint;
-        pub fn WheelJoint_get_local_anchor_a(slf: *const WheelJoint) -> *const Vec2;
-        pub fn WheelJoint_get_local_anchor_b(slf: *const WheelJoint) -> *const Vec2;
-        pub fn WheelJoint_get_local_axis_a(slf: *const WheelJoint) -> *const Vec2;
-        pub fn WheelJoint_get_joint_translation(slf: *const WheelJoint) -> f32;
-        pub fn WheelJoint_get_joint_speed(slf: *const WheelJoint) -> f32;
-        pub fn WheelJoint_is_motor_enabled(slf: *const WheelJoint) -> bool;
-        pub fn WheelJoint_enable_motor(slf: *mut WheelJoint, flag: bool);
-        pub fn WheelJoint_set_motor_speed(slf: *mut WheelJoint, speed: f32);
-        pub fn WheelJoint_get_motor_speed(slf: *const WheelJoint) -> f32;
-        pub fn WheelJoint_set_max_motor_torque(slf: *mut WheelJoint, torque: f32);
-        pub fn WheelJoint_get_max_motor_torque(slf: *const WheelJoint) -> f32;
-        pub fn WheelJoint_get_motor_torque(slf: *const WheelJoint) -> f32;
-        pub fn WheelJoint_set_spring_frequency(slf: *mut WheelJoint, frequency: f32);
-        pub fn WheelJoint_get_spring_frequency(slf: *const WheelJoint) -> f32;
-        pub fn WheelJoint_set_spring_damping_ratio(slf: *mut WheelJoint, ratio: f32);
-        pub fn WheelJoint_get_spring_damping_ratio(slf: *const WheelJoint) -> f32;
+    pub fn World_create_wheel_joint(
+        world: *mut World,
+        body_a: *mut Body,
+        body_b: *mut Body,
+        collide_connected: bool,
+        local_anchor_a: Vec2,
+        local_anchor_b: Vec2,
+        local_axis_a: Vec2,
+        enable_motor: bool,
+        max_motor_torque: f32,
+        motor_speed: f32,
+        frequency: f32,
+        damping_ratio: f32,
+    ) -> *mut Joint {
+        todo!()
+    }
+    pub fn WheelJoint_as_joint(slf: *mut WheelJoint) -> *mut Joint {
+        todo!()
+    }
+    pub fn Joint_as_wheel_joint(slf: *mut Joint) -> *mut WheelJoint {
+        todo!()
+    }
+    pub fn WheelJoint_get_local_anchor_a(slf: *const WheelJoint) -> *const Vec2 {
+        todo!()
+    }
+    pub fn WheelJoint_get_local_anchor_b(slf: *const WheelJoint) -> *const Vec2 {
+        todo!()
+    }
+    pub fn WheelJoint_get_local_axis_a(slf: *const WheelJoint) -> *const Vec2 {
+        todo!()
+    }
+    pub fn WheelJoint_get_joint_translation(slf: *const WheelJoint) -> f32 {
+        todo!()
+    }
+    pub fn WheelJoint_get_joint_speed(slf: *const WheelJoint) -> f32 {
+        todo!()
+    }
+    pub fn WheelJoint_is_motor_enabled(slf: *const WheelJoint) -> bool {
+        todo!()
+    }
+    pub fn WheelJoint_enable_motor(slf: *mut WheelJoint, flag: bool) {
+        todo!()
+    }
+    pub fn WheelJoint_set_motor_speed(slf: *mut WheelJoint, speed: f32) {
+        todo!()
+    }
+    pub fn WheelJoint_get_motor_speed(slf: *const WheelJoint) -> f32 {
+        todo!()
+    }
+    pub fn WheelJoint_set_max_motor_torque(slf: *mut WheelJoint, torque: f32) {
+        todo!()
+    }
+    pub fn WheelJoint_get_max_motor_torque(slf: *const WheelJoint) -> f32 {
+        todo!()
+    }
+    pub fn WheelJoint_get_motor_torque(slf: *const WheelJoint) -> f32 {
+        todo!()
+    }
+    pub fn WheelJoint_set_spring_frequency(slf: *mut WheelJoint, frequency: f32) {
+        todo!()
+    }
+    pub fn WheelJoint_get_spring_frequency(slf: *const WheelJoint) -> f32 {
+        todo!()
+    }
+    pub fn WheelJoint_set_spring_damping_ratio(slf: *mut WheelJoint, ratio: f32) {
+        todo!()
+    }
+    pub fn WheelJoint_get_spring_damping_ratio(slf: *const WheelJoint) -> f32 {
+        todo!()
     }
 }

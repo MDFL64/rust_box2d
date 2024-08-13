@@ -1,8 +1,8 @@
-use wrap::*;
 use common::math::Vec2;
+use dynamics::joints::{Joint, JointDef, JointType, LimitState};
+use dynamics::world::{BodyHandle, World};
 use user_data::UserDataTypes;
-use dynamics::world::{World, BodyHandle};
-use dynamics::joints::{Joint, JointType, JointDef, LimitState};
+use wrap::*;
 
 pub struct RopeJointDef {
     pub body_a: BodyHandle,
@@ -28,23 +28,27 @@ impl RopeJointDef {
 
 impl JointDef for RopeJointDef {
     fn joint_type() -> JointType
-        where Self: Sized
+    where
+        Self: Sized,
     {
         JointType::Rope
     }
 
     unsafe fn create<U: UserDataTypes>(&self, world: &mut World<U>) -> *mut ffi::Joint {
-        self.try_create(world).expect("joint create failed: invalid body handle")
+        self.try_create(world)
+            .expect("joint create failed: invalid body handle")
     }
 
     unsafe fn try_create<U: UserDataTypes>(&self, world: &mut World<U>) -> Option<*mut ffi::Joint> {
-        Some(ffi::World_create_rope_joint(world.mut_ptr(),
-                                          world.try_body_mut(self.body_a)?.mut_ptr(),
-                                          world.try_body_mut(self.body_b)?.mut_ptr(),
-                                          self.collide_connected,
-                                          self.local_anchor_a,
-                                          self.local_anchor_b,
-                                          self.max_length))
+        Some(ffi::World_create_rope_joint(
+            world.mut_ptr(),
+            world.try_body_mut(self.body_a)?.mut_ptr(),
+            world.try_body_mut(self.body_b)?.mut_ptr(),
+            self.collide_connected,
+            self.local_anchor_a,
+            self.local_anchor_b,
+            self.max_length,
+        ))
     }
 }
 
@@ -82,29 +86,44 @@ impl RopeJoint {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use dynamics::world::ffi::World;
+    use common::math::Vec2;
     pub use dynamics::body::ffi::Body;
     pub use dynamics::joints::ffi::Joint;
-    use common::math::Vec2;
     use dynamics::joints::LimitState;
+    pub use dynamics::world::ffi::World;
 
     pub enum RopeJoint {}
 
-    extern "C" {
-        pub fn World_create_rope_joint(world: *mut World,
-                                       body_a: *mut Body,
-                                       body_b: *mut Body,
-                                       collide_connected: bool,
-                                       local_anchor_a: Vec2,
-                                       local_anchor_b: Vec2,
-                                       max_length: f32)
-                                       -> *mut Joint;
-        pub fn RopeJoint_as_joint(slf: *mut RopeJoint) -> *mut Joint;
-        pub fn Joint_as_rope_joint(slf: *mut Joint) -> *mut RopeJoint;
-        pub fn RopeJoint_get_local_anchor_a(slf: *const RopeJoint) -> *const Vec2;
-        pub fn RopeJoint_get_local_anchor_b(slf: *const RopeJoint) -> *const Vec2;
-        pub fn RopeJoint_set_max_length(slf: *mut RopeJoint, length: f32);
-        pub fn RopeJoint_get_max_length(slf: *const RopeJoint) -> f32;
-        pub fn RopeJoint_get_limit_state(slf: *const RopeJoint) -> LimitState;
+    pub fn World_create_rope_joint(
+        world: *mut World,
+        body_a: *mut Body,
+        body_b: *mut Body,
+        collide_connected: bool,
+        local_anchor_a: Vec2,
+        local_anchor_b: Vec2,
+        max_length: f32,
+    ) -> *mut Joint {
+        todo!()
+    }
+    pub fn RopeJoint_as_joint(slf: *mut RopeJoint) -> *mut Joint {
+        todo!()
+    }
+    pub fn Joint_as_rope_joint(slf: *mut Joint) -> *mut RopeJoint {
+        todo!()
+    }
+    pub fn RopeJoint_get_local_anchor_a(slf: *const RopeJoint) -> *const Vec2 {
+        todo!()
+    }
+    pub fn RopeJoint_get_local_anchor_b(slf: *const RopeJoint) -> *const Vec2 {
+        todo!()
+    }
+    pub fn RopeJoint_set_max_length(slf: *mut RopeJoint, length: f32) {
+        todo!()
+    }
+    pub fn RopeJoint_get_max_length(slf: *const RopeJoint) -> f32 {
+        todo!()
+    }
+    pub fn RopeJoint_get_limit_state(slf: *const RopeJoint) -> LimitState {
+        todo!()
     }
 }

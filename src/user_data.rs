@@ -86,17 +86,27 @@ pub trait UserData<U> {
 
 #[doc(hidden)]
 pub mod ffi {
-    pub use ffi::Any;
     pub use dynamics::body::ffi::Body;
     pub use dynamics::fixture::ffi::Fixture;
     pub use dynamics::joints::ffi::Joint;
+    pub use ffi::Any;
 
-    extern "C" {
-        pub fn Body_get_user_data(slf: *const Body) -> Any;
-        pub fn Body_set_user_data(slf: *mut Body, data: Any);
-        pub fn Fixture_get_user_data(slf: *const Fixture) -> Any;
-        pub fn Fixture_set_user_data(slf: *mut Fixture, data: Any);
-        pub fn Joint_get_user_data(slf: *const Joint) -> Any;
-        pub fn Joint_set_user_data(slf: *mut Joint, data: Any);
+    pub fn Body_get_user_data(slf: *const Body) -> Any {
+        todo!()
+    }
+    pub fn Body_set_user_data(slf: *mut Body, data: Any) {
+        todo!()
+    }
+    pub fn Fixture_get_user_data(slf: *const Fixture) -> Any {
+        todo!()
+    }
+    pub fn Fixture_set_user_data(slf: *mut Fixture, data: Any) {
+        todo!()
+    }
+    pub fn Joint_get_user_data(slf: *const Joint) -> Any {
+        todo!()
+    }
+    pub fn Joint_set_user_data(slf: *mut Joint, data: Any) {
+        todo!()
     }
 }

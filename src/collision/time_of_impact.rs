@@ -1,7 +1,7 @@
-use std::mem;
-use std::marker::PhantomData;
-use common::math::Sweep;
 use collision::distance::{Proxy, RawProxy};
+use common::math::Sweep;
+use std::marker::PhantomData;
+use std::mem;
 
 #[repr(C)]
 #[doc(hidden)]
@@ -19,12 +19,13 @@ pub struct Input<'a> {
 }
 
 impl<'a> Input<'a> {
-    pub fn new(proxy_a: Proxy<'a>,
-               proxy_b: Proxy<'a>,
-               sweep_a: Sweep,
-               sweep_b: Sweep,
-               t_max: f32)
-               -> Input<'a> {
+    pub fn new(
+        proxy_a: Proxy<'a>,
+        proxy_b: Proxy<'a>,
+        sweep_a: Sweep,
+        sweep_b: Sweep,
+        t_max: f32,
+    ) -> Input<'a> {
         Input {
             raw: RawInput {
                 proxy_a: proxy_a.raw,
@@ -64,9 +65,9 @@ pub struct Output {
 
 #[doc(hidden)]
 pub mod ffi {
-    use super::{RawInput, Output};
+    use super::{Output, RawInput};
 
-    extern "C" {
-        pub fn time_of_impact(output: *mut Output, input: *const RawInput);
+    pub fn time_of_impact(output: *mut Output, input: *const RawInput) {
+        todo!()
     }
 }

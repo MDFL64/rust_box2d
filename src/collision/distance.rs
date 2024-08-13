@@ -1,7 +1,7 @@
-use std::mem;
-use std::marker::PhantomData;
-use common::math::{Vec2, Transform};
 use collision::shapes::Shape;
+use common::math::{Transform, Vec2};
+use std::marker::PhantomData;
+use std::mem;
 
 #[repr(C)]
 #[doc(hidden)]
@@ -60,12 +60,13 @@ pub struct Input<'a> {
 }
 
 impl<'a> Input<'a> {
-    pub fn new(proxy_a: Proxy<'a>,
-               proxy_b: Proxy<'a>,
-               transform_a: Transform,
-               transform_b: Transform,
-               use_radii: bool)
-               -> Input<'a> {
+    pub fn new(
+        proxy_a: Proxy<'a>,
+        proxy_b: Proxy<'a>,
+        transform_a: Transform,
+        transform_b: Transform,
+        use_radii: bool,
+    ) -> Input<'a> {
         Input {
             raw: RawInput {
                 proxy_a: proxy_a.raw,
@@ -97,11 +98,13 @@ pub struct Output {
 
 #[doc(hidden)]
 pub mod ffi {
+    use super::{Output, RawInput, RawProxy, SimplexCache};
     pub use collision::shapes::ffi::Shape;
-    use super::{RawProxy, RawInput, SimplexCache, Output};
 
-    extern "C" {
-        pub fn DistanceProxy_set(slf: *mut RawProxy, shape: *const Shape, index: i32);
-        pub fn distance(output: *mut Output, cache: *mut SimplexCache, input: *const RawInput);
+    pub fn DistanceProxy_set(slf: *mut RawProxy, shape: *const Shape, index: i32) {
+        todo!()
+    }
+    pub fn distance(output: *mut Output, cache: *mut SimplexCache, input: *const RawInput) {
+        todo!()
     }
 }

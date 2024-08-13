@@ -1,9 +1,9 @@
-use std::cell::{RefCell, Ref, RefMut};
-use std::marker::PhantomData;
-use std::iter::{Iterator, DoubleEndedIterator};
-use vec_map::{self, VecMap};
-use std::mem;
+use std::cell::{Ref, RefCell, RefMut};
 use std::fmt;
+use std::iter::{DoubleEndedIterator, Iterator};
+use std::marker::PhantomData;
+use std::mem;
+use vec_map::{self, VecMap};
 
 pub struct TypedHandle<T: ?Sized> {
     index: usize,
@@ -53,10 +53,11 @@ impl<T: ?Sized> PartialEq for TypedHandle<T> {
 
 impl<T: ?Sized> fmt::Debug for TypedHandle<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "TypedHandle {{ index: {}, version: {} }}",
-               self.index,
-               self.version)
+        write!(
+            f,
+            "TypedHandle {{ index: {}, version: {} }}",
+            self.index, self.version
+        )
     }
 }
 
@@ -110,9 +111,9 @@ impl<T: ?Sized, E> HandleMap<E, T> {
     }
 
     pub fn insert_with<F>(&mut self, f: F) -> TypedHandle<T>
-        where F: FnOnce(TypedHandle<T>) -> E
+    where
+        F: FnOnce(TypedHandle<T>) -> E,
     {
-
         let index = self.find_available();
 
         let entry = &mut self.entries[index];

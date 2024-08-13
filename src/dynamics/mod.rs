@@ -1,8 +1,8 @@
-pub mod world;
 pub mod body;
+pub mod contacts;
 pub mod fixture;
 pub mod joints;
-pub mod contacts;
+pub mod world;
 
 #[repr(C)]
 #[derive(Clone)]

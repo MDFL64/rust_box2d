@@ -1,14 +1,16 @@
+use serde::de::{Deserialize, DeserializeOwned, Deserializer};
+use serde::ser::{Serialize, Serializer};
 use std::collections::HashMap;
 use std::fmt::Debug;
-use serde::ser::{Serialize, Serializer};
-use serde::de::{Deserialize, Deserializer, DeserializeOwned};
 
-#[doc(hidden)] pub use b2::*;
-use user_data::{UserDataTypes, UserData};
+#[doc(hidden)]
+pub use b2::*;
+use user_data::{UserData, UserDataTypes};
 
 impl Serialize for Vec2 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let v: [f32; 2] = (*self).into();
         v.serialize(serializer)
@@ -17,7 +19,8 @@ impl Serialize for Vec2 {
 
 impl<'de> Deserialize<'de> for Vec2 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         let v: [f32; 2] = Deserialize::deserialize(deserializer)?;
         Ok(v.into())
@@ -71,33 +74,43 @@ impl IdToHandle {
 // TODO: avoid this struct
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WorldSnapshot<U: UserDataTypes>
-    where U::BodyData: Debug + Serialize + DeserializeOwned,
-          U::FixtureData: Debug + Serialize + DeserializeOwned,
-          U::JointData: Debug + Serialize + DeserializeOwned,
+where
+    U::BodyData: Debug + Serialize + DeserializeOwned,
+    U::FixtureData: Debug + Serialize + DeserializeOwned,
+    U::JointData: Debug + Serialize + DeserializeOwned,
 {
     config: WorldConfigSnapshot,
     bodies: Vec<CompleteBodySnapshot<U>>,
     joints: Vec<CompleteJointSnapshot<U>>,
 }
 
-type CompleteBodySnapshot<U: UserDataTypes> = (BodyId, BodySnapshot, U::BodyData, Vec<CompleteFixtureSnapshot<U>>);
+type CompleteBodySnapshot<U: UserDataTypes> = (
+    BodyId,
+    BodySnapshot,
+    U::BodyData,
+    Vec<CompleteFixtureSnapshot<U>>,
+);
 type CompleteFixtureSnapshot<U: UserDataTypes> = (FixtureSnapshot, U::FixtureData);
 type CompleteJointSnapshot<U: UserDataTypes> = (JointId, JointSnapshot, U::JointData);
 
 impl<U: UserDataTypes> WorldSnapshot<U>
-    where U::BodyData: Debug + Serialize + DeserializeOwned,
-          U::FixtureData: Debug + Serialize + DeserializeOwned,
-          U::JointData: Debug + Serialize + DeserializeOwned,
+where
+    U::BodyData: Debug + Serialize + DeserializeOwned,
+    U::FixtureData: Debug + Serialize + DeserializeOwned,
+    U::JointData: Debug + Serialize + DeserializeOwned,
 {
     pub fn take(world: &World<U>) -> Self
-        where U::BodyData: Serialize + Clone,
-              U::FixtureData: Serialize + Clone,
-              U::JointData: Serialize + Clone
+    where
+        U::BodyData: Serialize + Clone,
+        U::FixtureData: Serialize + Clone,
+        U::JointData: Serialize + Clone,
     {
-        let body_snapshots: Vec<_> = world.bodies()
+        let body_snapshots: Vec<_> = world
+            .bodies()
             .map(|(_, body)| {
                 let body: &MetaBody<U> = &body.borrow();
-                let fixture_snapshots: Vec<_> = body.fixtures()
+                let fixture_snapshots: Vec<_> = body
+                    .fixtures()
                     .map(|(_, fixture)| {
                         let fixture: &MetaFixture<U> = &fixture.borrow();
                         (FixtureSnapshot::take(fixture), fixture.user_data().clone())
@@ -109,7 +122,8 @@ impl<U: UserDataTypes> WorldSnapshot<U>
             })
             .collect();
 
-        let joint_snapshots: Vec<_> = world.joints()
+        let joint_snapshots: Vec<_> = world
+            .joints()
             .map(|(_, joint)| {
                 let joint: &MetaJoint<U> = &joint.borrow();
                 let (id, s) = JointSnapshot::take(joint);
@@ -125,9 +139,10 @@ impl<U: UserDataTypes> WorldSnapshot<U>
     }
 
     pub fn rebuild(&self, id_to_handle: &mut IdToHandle) -> World<U>
-        where U::BodyData: DeserializeOwned + Clone,
-              U::FixtureData: DeserializeOwned + Clone,
-              U::JointData: DeserializeOwned + Clone,
+    where
+        U::BodyData: DeserializeOwned + Clone,
+        U::FixtureData: DeserializeOwned + Clone,
+        U::JointData: DeserializeOwned + Clone,
     {
         id_to_handle.clear();
         let mut world = self.config.rebuild();
@@ -149,7 +164,7 @@ impl<U: UserDataTypes> WorldSnapshot<U>
         for &(id, ref snapshot, ref data) in joints {
             match snapshot.rebuild(&mut world, data.clone(), id_to_handle) {
                 Ok(handle) => id_to_handle.insert_joint(id, handle),
-                Err(gjs) => gear_joint_snapshots.push((id, gjs, data)), 
+                Err(gjs) => gear_joint_snapshots.push((id, gjs, data)),
             }
         }
 
@@ -170,7 +185,7 @@ macro_rules! snapshot {
         #[doc(hidden)]
         pub mod $module {
             pub use super::*;
-            
+
             #[derive(Serialize, Deserialize, Clone, Debug)]
             pub struct Snapshot {
                 $(
@@ -178,7 +193,7 @@ macro_rules! snapshot {
                     pub $field_name: $field_type
                 ),*
             }
-            
+
             pub mod default {
                 pub use super::*;
                 $($(pub fn $field_name() -> $field_type { $default })*)*
@@ -277,14 +292,16 @@ impl BodySnapshot {
             bullet: self.bullet,
             active: self.active,
             gravity_scale: self.gravity_scale,
-            .. BodyDef::new()
+            ..BodyDef::new()
         };
 
         world.create_body_with(&def, data)
     }
 
     pub fn may_restore_mass_data<U: UserDataTypes>(&self, body: &mut MetaBody<U>) {
-        self.mass_data.as_ref().map(|m| body.set_mass_data(&m.rebuild()));
+        self.mass_data
+            .as_ref()
+            .map(|m| body.set_mass_data(&m.rebuild()));
     }
 }
 
@@ -336,7 +353,11 @@ impl FixtureSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self, body: &mut MetaBody<U>, data: U::FixtureData) -> FixtureHandle {
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        body: &mut MetaBody<U>,
+        data: U::FixtureData,
+    ) -> FixtureHandle {
         let shape: UnknownShape = self.shape.rebuild();
         let mut def = FixtureDef {
             friction: self.friction,
@@ -344,7 +365,7 @@ impl FixtureSnapshot {
             density: self.density,
             is_sensor: self.is_sensor,
             filter: self.filter.clone(),
-            .. FixtureDef::new()
+            ..FixtureDef::new()
         };
 
         body.create_fixture_with(&shape, &mut def, data)
@@ -441,7 +462,7 @@ impl PolygonShapeSnapshot {
         PolygonShapeSnapshot {
             vertices: (0..shape.vertex_count())
                 .map(|i| *shape.vertex(i))
-                .collect()
+                .collect(),
         }
     }
 
@@ -512,12 +533,12 @@ impl JointSnapshot {
         (JointId(joint.handle().index()), snapshot)
     }
 
-    pub fn rebuild<'a, U: UserDataTypes>(&'a self,
-                                         world: &mut World<U>,
-                                         data: U::JointData,
-                                         id_to_handle: &mut IdToHandle)
-                                         -> Result<JointHandle, &'a GearJointSnapshot>
-    {
+    pub fn rebuild<'a, U: UserDataTypes>(
+        &'a self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> Result<JointHandle, &'a GearJointSnapshot> {
         use self::JointSnapshot::*;
         let value = match self {
             &Revolute(ref js) => js.rebuild(world, data, id_to_handle),
@@ -572,15 +593,17 @@ impl RevoluteJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = RevoluteJointDef {
@@ -597,7 +620,7 @@ impl RevoluteJointSnapshot {
             motor_speed: self.motor_speed,
             max_motor_torque: self.max_motor_torque,
         };
-        
+
         world.create_joint_with(&def, data)
     }
 }
@@ -639,15 +662,17 @@ impl PrismaticJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = PrismaticJointDef {
@@ -697,15 +722,17 @@ impl DistanceJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = DistanceJointDef {
@@ -758,15 +785,17 @@ impl PulleyJointSnapshot {
         unimplemented!()
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = PulleyJointDef {
@@ -811,15 +840,17 @@ impl MouseJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = MouseJointDef {
@@ -863,15 +894,17 @@ impl GearJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let joint_1 = id_to_handle.joint_handle(self.joint_1)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let joint_1 = id_to_handle
+            .joint_handle(self.joint_1)
             .unwrap_or_else(|| panic!("no handle for this joint id"));
-        let joint_2 = id_to_handle.joint_handle(self.joint_2)
+        let joint_2 = id_to_handle
+            .joint_handle(self.joint_2)
             .unwrap_or_else(|| panic!("no handle for this joint id"));
 
         let def = GearJointDef {
@@ -918,15 +951,17 @@ impl WheelJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = WheelJointDef {
@@ -974,15 +1009,17 @@ impl WeldJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = WeldJointDef {
@@ -1025,15 +1062,17 @@ impl FrictionJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = FrictionJointDef {
@@ -1073,15 +1112,17 @@ impl RopeJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = RopeJointDef {
@@ -1124,15 +1165,17 @@ impl MotorJointSnapshot {
         }
     }
 
-    pub fn rebuild<U: UserDataTypes>(&self,
-                                     world: &mut World<U>,
-                                     data: U::JointData,
-                                     id_to_handle: &mut IdToHandle)
-                                     -> JointHandle
-    {
-        let body_a = id_to_handle.body_handle(self.body_a)
+    pub fn rebuild<U: UserDataTypes>(
+        &self,
+        world: &mut World<U>,
+        data: U::JointData,
+        id_to_handle: &mut IdToHandle,
+    ) -> JointHandle {
+        let body_a = id_to_handle
+            .body_handle(self.body_a)
             .unwrap_or_else(|| panic!("no handle for this body id"));
-        let body_b = id_to_handle.body_handle(self.body_b)
+        let body_b = id_to_handle
+            .body_handle(self.body_b)
             .unwrap_or_else(|| panic!("no handle for this body id"));
 
         let def = MotorJointDef {

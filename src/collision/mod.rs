@@ -1,11 +1,11 @@
-pub mod shapes;
 pub mod distance;
+pub mod shapes;
 pub mod time_of_impact;
 
-use std::mem;
-use common::settings::MAX_MANIFOLD_POINTS;
-use common::math::{Vec2, Transform};
 use collision::shapes::Shape;
+use common::math::{Transform, Vec2};
+use common::settings::MAX_MANIFOLD_POINTS;
+use std::mem;
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -65,12 +65,13 @@ pub struct Manifold {
 }
 
 impl Manifold {
-    pub fn world_manifold(&self,
-                          xf_a: &Transform,
-                          radius_a: f32,
-                          xf_b: &Transform,
-                          radius_b: f32)
-                          -> WorldManifold {
+    pub fn world_manifold(
+        &self,
+        xf_a: &Transform,
+        radius_a: f32,
+        xf_b: &Transform,
+        radius_b: f32,
+    ) -> WorldManifold {
         unsafe {
             let mut w = mem::zeroed();
             ffi::WorldManifold_Initialize(&mut w, self, xf_a, radius_a, xf_b, radius_b);
@@ -96,10 +97,13 @@ pub enum PointState {
     Remove,
 }
 
-pub fn get_point_states(m1: &Manifold,
-                        m2: &Manifold)
-                        -> ([PointState; MAX_MANIFOLD_POINTS],
-                            [PointState; MAX_MANIFOLD_POINTS]) {
+pub fn get_point_states(
+    m1: &Manifold,
+    m2: &Manifold,
+) -> (
+    [PointState; MAX_MANIFOLD_POINTS],
+    [PointState; MAX_MANIFOLD_POINTS],
+) {
     unsafe {
         let (mut s1, mut s2) = mem::zeroed();
         ffi::get_point_states(&mut s1, &mut s2, m1, m2);
@@ -138,50 +142,63 @@ impl AABB {
     }
 }
 
-pub fn test_overlap<A, B>(shape_a: &A,
-                          index_a: i32,
-                          xf_a: &Transform,
-                          shape_b: &B,
-                          index_b: i32,
-                          xf_b: &Transform)
-                          -> bool
-    where A: Shape,
-          B: Shape
+pub fn test_overlap<A, B>(
+    shape_a: &A,
+    index_a: i32,
+    xf_a: &Transform,
+    shape_b: &B,
+    index_b: i32,
+    xf_b: &Transform,
+) -> bool
+where
+    A: Shape,
+    B: Shape,
 {
     unsafe {
-        ffi::test_overlap(shape_a.base_ptr(),
-                          index_a,
-                          shape_b.base_ptr(),
-                          index_b,
-                          xf_a,
-                          xf_b)
+        ffi::test_overlap(
+            shape_a.base_ptr(),
+            index_a,
+            shape_b.base_ptr(),
+            index_b,
+            xf_a,
+            xf_b,
+        )
     }
 }
 
 #[doc(hidden)]
 pub mod ffi {
+    use super::{Manifold, PointState, WorldManifold};
     pub use collision::shapes::ffi::Shape;
     use common::math::Transform;
     use common::settings::MAX_MANIFOLD_POINTS;
-    use super::{Manifold, WorldManifold, PointState};
 
-    extern "C" {
-        pub fn WorldManifold_Initialize(slf: *mut WorldManifold,
-                                        manifold: *const Manifold,
-                                        xf_a: *const Transform,
-                                        radius_a: f32,
-                                        xf_b: *const Transform,
-                                        radius_b: f32);
-        pub fn get_point_states(s1: &mut [PointState; MAX_MANIFOLD_POINTS],
-                                s2: &mut [PointState; MAX_MANIFOLD_POINTS],
-                                m1: *const Manifold,
-                                m2: *const Manifold);
-        pub fn test_overlap(shape_a: *const Shape,
-                            index_a: i32,
-                            shape_b: *const Shape,
-                            index_b: i32,
-                            xf_a: *const Transform,
-                            xf_b: *const Transform)
-                            -> bool;
+    pub fn WorldManifold_Initialize(
+        slf: *mut WorldManifold,
+        manifold: *const Manifold,
+        xf_a: *const Transform,
+        radius_a: f32,
+        xf_b: *const Transform,
+        radius_b: f32,
+    ) {
+        todo!()
+    }
+    pub fn get_point_states(
+        s1: &mut [PointState; MAX_MANIFOLD_POINTS],
+        s2: &mut [PointState; MAX_MANIFOLD_POINTS],
+        m1: *const Manifold,
+        m2: *const Manifold,
+    ) {
+        todo!()
+    }
+    pub fn test_overlap(
+        shape_a: *const Shape,
+        index_a: i32,
+        shape_b: *const Shape,
+        index_b: i32,
+        xf_a: *const Transform,
+        xf_b: *const Transform,
+    ) -> bool {
+        todo!()
     }
 }
