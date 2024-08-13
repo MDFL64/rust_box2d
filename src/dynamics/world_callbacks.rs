@@ -31,7 +31,7 @@ pub struct ContactFilterLink {
 wrap! { ffi::ContactFilterLink => custom ContactFilterLink }
 
 impl ContactFilterLink {
-    pub unsafe fn new() -> Self {
+    pub fn new() -> Self {
         ContactFilterLink {
             ptr: ffi::ContactFilterLink_alloc(),
             object: None,
@@ -101,7 +101,7 @@ pub struct ContactListenerLink {
 wrap! { ffi::ContactListenerLink => custom ContactListenerLink }
 
 impl ContactListenerLink {
-    pub unsafe fn new() -> Self {
+    pub fn new() -> Self {
         ContactListenerLink {
             ptr: ffi::ContactListenerLink_alloc(),
             object: None,
@@ -434,7 +434,7 @@ pub mod ffi {
     pub enum RayCastCallbackLink {}
 
     pub fn ContactFilterLink_alloc() -> *mut ContactFilterLink {
-        todo!()
+        std::ptr::null_mut()
     }
     pub fn ContactFilterLink_bind(
         slf: *mut ContactFilterLink,
@@ -447,10 +447,10 @@ pub mod ffi {
         todo!()
     }
     pub fn ContactFilterLink_drop(slf: *mut ContactFilterLink) {
-        todo!()
+        
     }
     pub fn ContactListenerLink_alloc() -> *mut ContactListenerLink {
-        todo!()
+        std::ptr::null_mut()
     }
     pub fn ContactListenerLink_bind(
         slf: *mut ContactListenerLink,
@@ -466,7 +466,7 @@ pub mod ffi {
         todo!()
     }
     pub fn ContactListenerLink_drop(slf: *mut ContactListenerLink) {
-        todo!()
+
     }
     pub fn QueryCallbackLink_alloc() -> *mut QueryCallbackLink {
         todo!()

@@ -83,6 +83,7 @@
 #![allow(non_snake_case)]
 #![allow(unused)]
 
+extern crate box2d3;
 extern crate libc;
 extern crate vec_map;
 #[macro_use]

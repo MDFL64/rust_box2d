@@ -168,19 +168,11 @@ impl Fixture {
     }
 
     pub fn shape_mut<'a>(&'a mut self) -> WrappedRefMut<'a, UnknownShape> {
-        unsafe {
-            WrappedRefMut::new(UnknownShape::from_ffi(ffi::Fixture_get_shape(
-                self.mut_ptr(),
-            )))
-        }
+        panic!("shape_mut")
     }
 
     pub fn shape<'a>(&'a self) -> WrappedRef<'a, UnknownShape> {
-        unsafe {
-            WrappedRef::new(UnknownShape::from_ffi(
-                ffi::Fixture_get_shape_const(self.ptr()) as *mut ffi::Shape,
-            ))
-        }
+        panic!("shape")
     }
 
     pub fn set_sensor(&mut self, flag: bool) {

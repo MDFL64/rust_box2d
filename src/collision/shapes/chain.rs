@@ -6,99 +6,59 @@ use super::{EdgeShape, Shape};
 use common::math::Vec2;
 use wrap::*;
 
-wrap_shape! {
-    ffi::ChainShape => ChainShape
-    < ffi::ChainShape_as_shape
-    > ffi::Shape_as_chain_shape
-}
+pub struct ChainShape;
 
 impl ChainShape {
     pub fn new() -> Self {
-        unsafe { ChainShape::from_ffi(ffi::ChainShape_new()) }
+        panic!("chain shape");
     }
 
     pub fn new_loop(vertices: &[Vec2]) -> Self {
-        let mut s = Self::new();
-        s.create_loop(vertices);
-        s
+        panic!("chain shape");
     }
 
     pub fn new_chain(vertices: &[Vec2]) -> Self {
-        let mut s = Self::new();
-        s.create_chain(vertices);
-        s
+        panic!("chain shape");
     }
 
     pub fn clear(&mut self) {
-        unsafe { ffi::ChainShape_clear(self.mut_ptr()) }
+        panic!("chain shape");
     }
 
     pub fn create_loop(&mut self, vertices: &[Vec2]) {
-        unsafe {
-            ffi::ChainShape_create_loop(self.mut_ptr(), vertices.as_ptr(), vertices.len() as i32)
-        }
+        panic!("chain shape");
     }
 
     pub fn create_chain(&mut self, vertices: &[Vec2]) {
-        unsafe {
-            ffi::ChainShape_create_chain(self.mut_ptr(), vertices.as_ptr(), vertices.len() as i32)
-        }
+        panic!("chain shape");
     }
 
     pub fn vertices(&self) -> &[Vec2] {
-        unsafe {
-            let vertices = ffi::ChainShape_get_vertices_const(self.ptr());
-            let count = ffi::ChainShape_get_vertex_count(self.ptr());
-            slice::from_raw_parts(vertices, count as usize)
-        }
+        panic!("chain shape");
     }
 
     pub fn prev_vertex(&self) -> Option<Vec2> {
-        unsafe {
-            let mut v = mem::MaybeUninit::uninit();
-            if ffi::ChainShape_get_prev_vertex(self.ptr(), &mut *v.as_mut_ptr()) {
-                Some(v.assume_init())
-            } else {
-                None
-            }
-        }
+        panic!("chain shape");
     }
 
     pub fn set_prev_vertex(&mut self, v: Option<Vec2>) {
-        let ptr = v.as_ref().map(|v0| v0 as *const _).unwrap_or(ptr::null());
-        unsafe { ffi::ChainShape_set_prev_vertex(self.mut_ptr(), ptr) }
+        panic!("chain shape");
     }
 
     pub fn next_vertex(&self) -> Option<Vec2> {
-        unsafe {
-            let mut v = mem::MaybeUninit::uninit();
-            if ffi::ChainShape_get_next_vertex(self.ptr(), &mut *v.as_mut_ptr()) {
-                Some(v.assume_init())
-            } else {
-                None
-            }
-        }
+        panic!("chain shape");
     }
 
     pub fn set_next_vertex(&mut self, v: Option<Vec2>) {
-        let ptr = v.as_ref().map(|v0| v0 as *const _).unwrap_or(ptr::null());
-        unsafe { ffi::ChainShape_set_next_vertex(self.mut_ptr(), ptr) }
+        panic!("chain shape");
     }
 
     pub fn child_edge(&self, index: i32) -> EdgeShape {
-        unsafe {
-            let mut edge = EdgeShape::new();
-            ffi::ChainShape_get_child_edge(self.ptr(), edge.mut_ptr(), index);
-            edge
-        }
+        panic!("chain shape");
     }
 }
 
-impl Drop for ChainShape {
-    fn drop(&mut self) {
-        unsafe { ffi::ChainShape_drop(self.mut_ptr()) }
-    }
-}
+impl Shape for ChainShape {}
 
 #[doc(hidden)]
 pub mod ffi {

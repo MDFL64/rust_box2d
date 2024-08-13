@@ -5,81 +5,56 @@ use super::Shape;
 use common::math::Vec2;
 use wrap::*;
 
-wrap_shape! {
-    ffi::EdgeShape => EdgeShape
-    < ffi::EdgeShape_as_shape
-    > ffi::Shape_as_edge_shape
-}
+pub struct EdgeShape;
 
 impl EdgeShape {
     pub fn new() -> Self {
-        unsafe { EdgeShape::from_ffi(ffi::EdgeShape_new()) }
+        panic!("edge shape");
     }
 
     pub fn new_with(v1: &Vec2, v2: &Vec2) -> Self {
-        let mut s = Self::new();
-        s.set(v1, v2);
-        s
+        panic!("edge shape");
+
     }
 
     pub fn set(&mut self, v1: &Vec2, v2: &Vec2) {
-        unsafe { ffi::EdgeShape_set(self.mut_ptr(), v1, v2) }
+        panic!("edge shape");
     }
 
     pub fn v1(&self) -> Vec2 {
-        unsafe { ffi::EdgeShape_get_v1(self.ptr()) }
+        panic!("edge shape");
     }
 
     pub fn set_v1(&mut self, v1: Vec2) {
-        unsafe { ffi::EdgeShape_set_v1(self.mut_ptr(), v1) }
+        panic!("edge shape");
     }
 
     pub fn v2(&self) -> Vec2 {
-        unsafe { ffi::EdgeShape_get_v2(self.ptr()) }
+        panic!("edge shape");
     }
 
     pub fn set_v2(&mut self, v2: Vec2) {
-        unsafe { ffi::EdgeShape_set_v2(self.mut_ptr(), v2) }
+        panic!("edge shape");
     }
 
     pub fn v0(&self) -> Option<Vec2> {
-        unsafe {
-            let mut v0 = mem::MaybeUninit::uninit();
-            if ffi::EdgeShape_get_v0(self.ptr(), &mut *v0.as_mut_ptr()) {
-                Some(v0.assume_init())
-            } else {
-                None
-            }
-        }
+        panic!("edge shape");
     }
 
     pub fn set_v0(&mut self, v0: Option<Vec2>) {
-        let ptr = v0.as_ref().map(|v0| v0 as *const _).unwrap_or(ptr::null());
-        unsafe { ffi::EdgeShape_set_v0(self.mut_ptr(), ptr) }
+        panic!("edge shape");
     }
 
     pub fn v3(&self) -> Option<Vec2> {
-        unsafe {
-            let mut v3 = mem::MaybeUninit::uninit();
-            if ffi::EdgeShape_get_v3(self.ptr(), &mut *v3.as_mut_ptr()) {
-                Some(v3.assume_init())
-            } else {
-                None
-            }
-        }
+        panic!("edge shape");
     }
 
     pub fn set_v3(&mut self, v3: Option<Vec2>) {
-        let ptr = v3.as_ref().map(|v3| v3 as *const _).unwrap_or(ptr::null());
-        unsafe { ffi::EdgeShape_set_v0(self.mut_ptr(), ptr) }
+        panic!("edge shape");
     }
 }
 
-impl Drop for EdgeShape {
-    fn drop(&mut self) {
-        unsafe { ffi::EdgeShape_drop(self.mut_ptr()) }
-    }
-}
+impl Shape for EdgeShape {}
 
 #[doc(hidden)]
 pub mod ffi {

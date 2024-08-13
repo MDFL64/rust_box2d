@@ -1,4 +1,4 @@
-pub mod math;
+pub use box2d3::math;
 pub mod settings;
 
 use common::math::{Transform, Vec2};
@@ -116,40 +116,6 @@ unsafe extern "C" fn draw_transform<D: Draw>(object: ffi::Any, xf: *const Transf
 }
 
 #[doc(hidden)]
-pub struct DrawLink {
-    ptr: *mut ffi::DrawLink,
-}
-
-impl DrawLink {
-    pub unsafe fn new() -> DrawLink {
-        DrawLink {
-            ptr: ffi::DrawLink_alloc(),
-        }
-    }
-
-    pub unsafe fn use_with<D: Draw>(&mut self, draw: &mut D, flags: DrawFlags) -> *mut ffi::Draw {
-        ffi::DrawLink_bind(
-            self.ptr,
-            mem::transmute(draw),
-            draw_polygon::<D>,
-            draw_solid_polygon::<D>,
-            draw_circle::<D>,
-            draw_solid_circle::<D>,
-            draw_segment::<D>,
-            draw_transform::<D>,
-        );
-        ffi::DrawLink_set_flags(self.ptr, flags);
-        ffi::DrawLink_as_base(self.ptr)
-    }
-}
-
-impl Drop for DrawLink {
-    fn drop(&mut self) {
-        unsafe { ffi::DrawLink_drop(self.ptr) }
-    }
-}
-
-#[doc(hidden)]
 pub mod ffi {
     use super::{Color, DrawFlags};
     use common::math::{Transform, Vec2};
@@ -157,29 +123,4 @@ pub mod ffi {
 
     pub enum Draw {}
     pub enum DrawLink {}
-
-    pub fn DrawLink_alloc() -> *mut DrawLink {
-        todo!()
-    }
-    pub fn DrawLink_as_base(slf: *mut DrawLink) -> *mut Draw {
-        todo!()
-    }
-    pub fn DrawLink_drop(slf: *mut DrawLink) {
-        todo!()
-    }
-    pub fn DrawLink_bind(
-        slf: *mut DrawLink,
-        object: Any,
-        draw_polygon: unsafe extern "C" fn(Any, *const Vec2, i32, *const Color),
-        draw_solid_polygon: unsafe extern "C" fn(Any, *const Vec2, i32, *const Color),
-        draw_circle: unsafe extern "C" fn(Any, *const Vec2, f32, *const Color),
-        draw_solid_circle: unsafe extern "C" fn(Any, *const Vec2, f32, *const Vec2, *const Color),
-        draw_segment: unsafe extern "C" fn(Any, *const Vec2, *const Vec2, *const Color),
-        draw_transform: unsafe extern "C" fn(Any, *const Transform),
-    ) {
-        todo!()
-    }
-    pub fn DrawLink_set_flags(slf: *mut DrawLink, flags: DrawFlags) {
-        todo!()
-    }
 }

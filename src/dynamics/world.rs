@@ -7,7 +7,7 @@ use self::callbacks::{
 };
 use collision::AABB;
 use common::math::Vec2;
-use common::{Draw, DrawFlags, DrawLink};
+use common::{Draw, DrawFlags};
 use dynamics::body::{Body, BodyDef, MetaBody};
 use dynamics::contacts::Contact;
 use dynamics::joints::{Joint, JointDef, MetaJoint};
@@ -24,12 +24,12 @@ pub type BodyHandle = TypedHandle<Body>;
 pub type JointHandle = TypedHandle<dyn Joint>;
 
 pub struct World<U: UserDataTypes> {
+    handle: box2d3::World,
     ptr: *mut ffi::World,
     bodies: HandleMap<MetaBody<U>, Body>,
     joints: HandleMap<MetaJoint<U>, dyn Joint>,
     contact_filter_link: ContactFilterLink,
-    contact_listener_link: ContactListenerLink,
-    draw_link: DrawLink,
+    contact_listener_link: ContactListenerLink
 }
 
 impl<U: UserDataTypes> Wrapped<ffi::World> for World<U> {
@@ -44,15 +44,16 @@ impl<U: UserDataTypes> Wrapped<ffi::World> for World<U> {
 
 impl<U: UserDataTypes> World<U> {
     pub fn new(gravity: &Vec2) -> Self {
-        unsafe {
-            World {
-                ptr: ffi::World_new(gravity),
-                bodies: HandleMap::new(),
-                joints: HandleMap::new(),
-                contact_filter_link: ContactFilterLink::new(),
-                contact_listener_link: ContactListenerLink::new(),
-                draw_link: DrawLink::new(),
-            }
+        let mut def = box2d3::WorldDef::default();
+        def.gravity = *gravity;
+        let handle = box2d3::World::new(&def);
+        World {
+            handle,
+            ptr: std::ptr::null_mut(),
+            bodies: HandleMap::new(),
+            joints: HandleMap::new(),
+            contact_filter_link: ContactFilterLink::new(),
+            contact_listener_link: ContactListenerLink::new()
         }
     }
 
@@ -194,14 +195,15 @@ impl<U: UserDataTypes> World<U> {
     }
 
     pub fn draw_debug_data<D: Draw>(&mut self, draw: &mut D, flags: DrawFlags) {
-        unsafe {
+        /*unsafe {
             let ptr = self.draw_link.use_with(draw, flags);
             ffi::World_set_debug_draw(self.mut_ptr(), ptr);
 
             ffi::World_draw_debug_data(self.mut_ptr());
 
             ffi::World_set_debug_draw(self.mut_ptr(), ptr::null_mut());
-        }
+        }*/
+        println!("TODO DRAW");
     }
 
     pub fn query_aabb<C: QueryCallback>(&self, callback: &mut C, aabb: &AABB) {
@@ -329,12 +331,6 @@ impl<U: UserDataTypes> World<U> {
     }
 }
 
-impl<U: UserDataTypes> Drop for World<U> {
-    fn drop(&mut self) {
-        unsafe { ffi::World_drop(self.mut_ptr()) }
-    }
-}
-
 pub struct ContactIterMut<'a> {
     ptr: *mut ffi::Contact,
     phantom: PhantomData<&'a ()>,
@@ -396,9 +392,6 @@ pub mod ffi {
 
     pub enum World {}
 
-    pub fn World_new(gravity: *const Vec2) -> *mut World {
-        todo!()
-    }
     pub fn World_drop(slf: *mut World) {
         todo!()
     }

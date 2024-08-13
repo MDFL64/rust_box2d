@@ -47,7 +47,21 @@ pub enum ShapeType {
     Count,
 }
 
-pub trait Shape: WrappedBase<ffi::Shape> {
+pub trait Shape {
+    fn base_ptr(&self) -> *const ffi::Shape {
+        panic!("no base ptr");
+    }
+}
+
+pub enum UnknownShape {
+    Unknown,
+    Circle(CircleShape),
+    Edge(EdgeShape),
+    Polygon(PolygonShape),
+    Chain(ChainShape),
+}
+
+/*pub trait Shape: WrappedBase<ffi::Shape> {
     fn shape_type(&self) -> ShapeType {
         unsafe { ffi::Shape_get_type(self.base_ptr()) }
     }
@@ -94,56 +108,7 @@ pub trait Shape: WrappedBase<ffi::Shape> {
             mass_data
         }
     }
-}
-
-pub enum UnknownShape {
-    Unknown,
-    Circle(CircleShape),
-    Edge(EdgeShape),
-    Polygon(PolygonShape),
-    Chain(ChainShape),
-}
-
-impl WrappedBase<ffi::Shape> for UnknownShape {
-    unsafe fn base_ptr(&self) -> *const ffi::Shape {
-        use self::UnknownShape::*;
-        match self {
-            &Circle(ref x) => x.base_ptr(),
-            &Edge(ref x) => x.base_ptr(),
-            &Polygon(ref x) => x.base_ptr(),
-            &Chain(ref x) => x.base_ptr(),
-            _ => panic!("Truly unknown shape"),
-        }
-    }
-
-    unsafe fn mut_base_ptr(&mut self) -> *mut ffi::Shape {
-        use self::UnknownShape::*;
-        match self {
-            &mut Circle(ref mut x) => x.mut_base_ptr(),
-            &mut Edge(ref mut x) => x.mut_base_ptr(),
-            &mut Polygon(ref mut x) => x.mut_base_ptr(),
-            &mut Chain(ref mut x) => x.mut_base_ptr(),
-            _ => panic!("Truly unknown shape"),
-        }
-    }
-}
-
-impl FromFFI<ffi::Shape> for UnknownShape {
-    unsafe fn from_ffi(ptr: *mut ffi::Shape) -> UnknownShape {
-        use self::UnknownShape::*;
-        assert!(!ptr.is_null());
-        let shape_type = ffi::Shape_get_type(ptr as *const ffi::Shape);
-        match shape_type {
-            ShapeType::Circle => Circle(CircleShape::from_ffi(ptr)),
-            ShapeType::Edge => Edge(EdgeShape::from_ffi(ptr)),
-            ShapeType::Polygon => Polygon(PolygonShape::from_ffi(ptr)),
-            ShapeType::Chain => Chain(ChainShape::from_ffi(ptr)),
-            _ => Unknown,
-        }
-    }
-}
-
-impl Shape for UnknownShape {}
+}*/
 
 #[doc(hidden)]
 pub mod ffi {

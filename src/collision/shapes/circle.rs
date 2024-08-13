@@ -2,66 +2,63 @@ use super::Shape;
 use common::math::Vec2;
 use wrap::*;
 
-wrap_shape! {
-    ffi::CircleShape => CircleShape
-    < ffi::CircleShape_as_shape
-    > ffi::Shape_as_circle_shape
+pub struct CircleShape {
+    radius: f32,
+    offset: Vec2
 }
 
 impl CircleShape {
+    #[deprecated = "Consider using a different constructor that gives you what you want."]
     pub fn new() -> Self {
-        unsafe { CircleShape::from_ffi(ffi::CircleShape_new()) }
+        Self {
+            radius: 1.0,
+            offset: Vec2 { x: 0.0, y: 0.0 }
+        }
     }
 
     pub fn new_with(position: Vec2, radius: f32) -> Self {
-        let mut circle = Self::new();
-        circle.set_position(position);
-        circle.set_radius(radius);
-        circle
+        assert!(radius > 0.0);
+        Self {
+            radius,
+            offset: position
+        }
     }
 
     pub fn support(&self, dir: &Vec2) -> i32 {
-        unsafe { ffi::CircleShape_get_support(self.ptr(), dir) }
+        panic!("circle");
     }
 
     pub fn support_vertex<'a>(&'a self, dir: &Vec2) -> &'a Vec2 {
-        unsafe {
-            &*ffi::CircleShape_get_support_vertex(self.ptr(), dir) // Comes from a C++ &
-        }
+        panic!("circle");
     }
 
     pub fn vertex_count(&self) -> i32 {
-        unsafe { ffi::CircleShape_get_vertex_count(self.ptr()) }
+        panic!("circle");
     }
 
     pub fn vertex<'a>(&'a self, index: i32) -> &'a Vec2 {
-        unsafe {
-            &*ffi::CircleShape_get_vertex(self.ptr(), index) // Comes from a C++ &
-        }
+        panic!("circle");
     }
 
     pub fn radius(&self) -> f32 {
-        unsafe { ffi::Shape_get_radius(self.base_ptr()) }
+        self.radius
     }
 
     pub fn set_radius(&mut self, radius: f32) {
-        unsafe { ffi::Shape_set_radius(self.mut_base_ptr(), radius) }
+        assert!(radius > 0.0);
+        self.radius = radius;
     }
 
     pub fn position(&self) -> Vec2 {
-        unsafe { ffi::CircleShape_get_pos(self.ptr()) }
+        self.offset
     }
 
     pub fn set_position(&mut self, pos: Vec2) {
-        unsafe { ffi::CircleShape_set_pos(self.mut_ptr(), pos) }
+        self.offset = pos;
     }
 }
 
-impl Drop for CircleShape {
-    fn drop(&mut self) {
-        unsafe { ffi::CircleShape_drop(self.mut_ptr()) }
-    }
-}
+impl Shape for CircleShape {}
 
 #[doc(hidden)]
 pub mod ffi {
