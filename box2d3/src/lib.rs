@@ -11,3 +11,4 @@ type PhantomNoSend = PhantomData<*mut ()>;
 
 pub use world::{World, WorldDef};
 pub use body::{Body, BodyDef};
+pub use shapes::{Shape, ShapeDef};

@@ -127,18 +127,8 @@ pub mod b2 {
         ANGULAR_SLOP, LINEAR_SLOP, MAX_MANIFOLD_POINTS, MAX_POLYGON_VERTICES, PI, POLYGON_RADIUS,
     };
     pub use common::{Color, Draw, DrawFlags};
-    pub use dynamics::body::{Body, BodyDef, BodyType, FixtureHandle, MetaBody};
+    pub use dynamics::body::{BodyDef, BodyType, FixtureHandle, MetaBody};
     pub use dynamics::fixture::{Filter, Fixture, FixtureDef, MetaFixture};
-    pub use dynamics::joints::{
-        DistanceJoint, DistanceJointDef, FrictionJoint, FrictionJointDef, GearJoint, GearJointDef,
-        Joint, JointDef, JointType, LimitState, MetaJoint, MotorJoint, MotorJointDef, MouseJoint,
-        MouseJointDef, PrismaticJoint, PrismaticJointDef, PulleyJoint, PulleyJointDef,
-        RevoluteJoint, RevoluteJointDef, RopeJoint, RopeJointDef, UnknownJoint, WeldJoint,
-        WeldJointDef, WheelJoint, WheelJointDef,
-    };
-    pub use dynamics::world::callbacks::{
-        ContactFilter, ContactImpulse, ContactListener, QueryCallback, RayCastCallback,
-    };
     pub use dynamics::world::{BodyHandle, JointHandle, World};
     pub use dynamics::Profile;
 }

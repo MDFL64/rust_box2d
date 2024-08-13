@@ -1,9 +1,9 @@
 use box2d3::body::BodyKind;
+use box2d3::ShapeDef;
 use collision::shapes::{MassData, Shape};
 use common::math::{Transform, Vec2};
 use dynamics::contacts::{Contact, ContactEdge};
 use dynamics::fixture::{Fixture, FixtureDef, MetaFixture};
-use dynamics::joints::JointEdge;
 use dynamics::world::{BodyHandle, JointHandle};
 use handle::*;
 use std::cell::{Ref, RefMut};
@@ -13,6 +13,8 @@ use std::ops::{Deref, DerefMut};
 use std::ptr;
 use user_data::{InternalUserData, RawUserData, RawUserDataMut, UserData, UserDataTypes};
 use wrap::*;
+
+use crate::b2::UnknownShape;
 
 pub type BodyType = box2d3::body::BodyKind;
 
@@ -57,145 +59,63 @@ impl BodyDef {
     }
 }
 
-pub type FixtureHandle = TypedHandle<Fixture>;
+pub struct FixtureHandle(box2d3::Shape);
 
-pub struct MetaBody<U: UserDataTypes> {
-    body: Body,
-    fixtures: HandleMap<MetaFixture<U>, Fixture>,
-    user_data: Box<InternalUserData<BodyHandle, U::BodyData>>,
+pub struct MetaBody {
+    body: box2d3::Body,
 }
 
-impl<U: UserDataTypes> MetaBody<U> {
-    #[doc(hidden)]
-    pub unsafe fn new(ptr: *mut ffi::Body, handle: BodyHandle, custom: U::BodyData) -> Self {
-        let mut b = MetaBody {
-            body: Body::from_ffi(ptr),
-            fixtures: HandleMap::new(),
-            user_data: Box::new(InternalUserData {
-                handle: handle,
-                custom: custom,
-            }),
-        };
-        b.mut_ptr().set_internal_user_data(&mut *b.user_data);
-        b
+impl MetaBody {
+    pub fn new(body: box2d3::Body) -> Self {
+        Self {
+            body
+        }
     }
 
     pub fn create_fixture(&mut self, shape: &dyn Shape, def: &mut FixtureDef) -> FixtureHandle
-    where
-        U::FixtureData: Default,
     {
-        self.create_fixture_with(shape, def, U::FixtureData::default())
+        self.create_fixture_with(shape, def)
     }
 
     pub fn create_fixture_with(
         &mut self,
         shape: &dyn Shape,
         def: &mut FixtureDef,
-        data: U::FixtureData,
     ) -> FixtureHandle {
-        unsafe {
-            def.shape = shape.base_ptr();
-            let fixture = ffi::Body_create_fixture(self.mut_ptr(), def);
-            self.fixtures
-                .insert_with(|h| MetaFixture::new(fixture, h, data))
-        }
+
+        let mut shape_def = ShapeDef::default();
+        shape_def.friction = def.friction;
+        shape_def.restitution = def.restitution;
+        shape_def.density = def.density;
+
+        let shape = match shape.to_enum() {
+            UnknownShape::Polygon(polygon) => {
+                self.body.create_shape_polygon(&shape_def, &polygon.inner)
+            }
+            _ => panic!("?")
+        };
+
+        FixtureHandle(shape)
     }
 
     pub fn create_fast_fixture(&mut self, shape: &dyn Shape, density: f32) -> FixtureHandle
-    where
-        U::FixtureData: Default,
     {
-        self.create_fast_fixture_with(shape, density, U::FixtureData::default())
+        self.create_fast_fixture_with(shape, density)
     }
 
     pub fn create_fast_fixture_with(
         &mut self,
         shape: &dyn Shape,
         density: f32,
-        data: U::FixtureData,
     ) -> FixtureHandle {
-        unsafe {
-            let fixture = ffi::Body_create_fast_fixture(self.mut_ptr(), shape.base_ptr(), density);
-            self.fixtures
-                .insert_with(|h| MetaFixture::new(fixture, h, data))
-        }
-    }
+        // the defaults here aren't consistent but who cares at this stage?
+        let mut def = FixtureDef::new();
+        def.density = density;
 
-    pub fn fixture(&self, handle: FixtureHandle) -> Ref<MetaFixture<U>> {
-        self.fixtures.get(handle).expect("invalid fixture handle")
-    }
-
-    pub fn fixture_mut(&self, handle: FixtureHandle) -> RefMut<MetaFixture<U>> {
-        self.fixtures
-            .get_mut(handle)
-            .expect("invalid fixture handle")
-    }
-
-    pub fn try_fixture(&self, handle: FixtureHandle) -> Option<Ref<MetaFixture<U>>> {
-        self.fixtures.get(handle)
-    }
-
-    pub fn try_fixture_mut(&self, handle: FixtureHandle) -> Option<RefMut<MetaFixture<U>>> {
-        self.fixtures.get_mut(handle)
-    }
-
-    pub fn destroy_fixture(&mut self, handle: FixtureHandle) {
-        let mut fixture = self.fixtures.remove(handle);
-        unsafe {
-            ffi::Body_destroy_fixture(self.mut_ptr(), fixture.mut_ptr());
-        }
-    }
-
-    pub fn fixtures(&self) -> HandleIter<Fixture, MetaFixture<U>> {
-        self.fixtures.iter()
-    }
-
-    /// This method is here because contacts are owned by the world and not by the body,
-    /// and having a reference to a `MetaBody` requires having a reference to the world.
-    pub fn contacts(&self) -> ContactIter {
-        ContactIter {
-            edge: unsafe { ffi::Body_get_contact_list_const(self.ptr()) },
-            phantom: PhantomData,
-        }
-    }
-
-    /// This method is here because contacts are owned by the world and not by the body,
-    /// however having a mutable reference to a MetaBody only requires having an immutable reference to the World,
-    /// that's why this method is unsafe.
-    pub unsafe fn contacts_mut(&mut self) -> ContactIterMut {
-        ContactIterMut {
-            edge: ffi::Body_get_contact_list(self.mut_ptr()),
-            phantom: PhantomData,
-        }
+        self.create_fixture_with(shape, &mut def)
     }
 }
-
-impl<U: UserDataTypes> UserData<U::BodyData> for MetaBody<U> {
-    fn user_data(&self) -> &U::BodyData {
-        &self.user_data.custom
-    }
-
-    fn user_data_mut(&mut self) -> &mut U::BodyData {
-        &mut self.user_data.custom
-    }
-}
-
-impl<U: UserDataTypes> Deref for MetaBody<U> {
-    type Target = Body;
-
-    fn deref(&self) -> &Body {
-        &self.body
-    }
-}
-
-impl<U: UserDataTypes> DerefMut for MetaBody<U> {
-    fn deref_mut(&mut self) -> &mut Body {
-        &mut self.body
-    }
-}
-
-wrap! { ffi::Body => pub Body }
-
+/*
 impl Body {
     pub fn handle(&self) -> BodyHandle {
         panic!()
@@ -403,28 +323,7 @@ impl Body {
         unsafe { ffi::Body_dump(self.mut_ptr()) }
     }
 }
-
-pub struct JointIter<'a> {
-    edge: *const JointEdge,
-    phantom: PhantomData<&'a ()>,
-}
-
-impl<'a> Iterator for JointIter<'a> {
-    type Item = (BodyHandle, JointHandle);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        unsafe {
-            match self.edge.as_ref() {
-                None => None,
-                Some(edge) => {
-                    self.edge = edge.next;
-                    //Some((edge.other.handle(), edge.joint.handle()))
-                    panic!()
-                }
-            }
-        }
-    }
-}
+*/
 
 pub struct ContactIter<'a> {
     edge: *const ContactEdge,
@@ -483,7 +382,6 @@ pub mod ffi {
     use dynamics::contacts::ContactEdge;
     pub use dynamics::fixture::ffi::Fixture;
     use dynamics::fixture::FixtureDef;
-    use dynamics::joints::JointEdge;
     pub use ffi::Any;
 
     pub enum Body {}
@@ -636,14 +534,6 @@ pub mod ffi {
         todo!()
     }
     pub fn Body_is_fixed_rotation(slf: *const Body) -> bool {
-        todo!()
-    }
-    // pub fn Body_get_fixture_list(slf: *mut Body) -> *mut Fixture {todo!()}
-    // pub fn Body_get_fixture_list_const(slf: *const Body) -> *const Fixture {todo!()}
-    pub fn Body_get_joint_list(slf: *mut Body) -> *mut JointEdge {
-        todo!()
-    }
-    pub fn Body_get_joint_list_const(slf: *const Body) -> *const JointEdge {
         todo!()
     }
     pub fn Body_get_contact_list(slf: *mut Body) -> *mut ContactEdge {

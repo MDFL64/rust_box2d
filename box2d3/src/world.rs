@@ -78,6 +78,12 @@ impl World {
         }
     }
 
+	pub fn step(&self, time_step: f32, substep_count: u32) {
+		unsafe {
+			b2World_Step(*self, time_step, substep_count);
+		}
+	}
+
     pub fn create_body(&self, def: &BodyDef) -> Body {
         unsafe {
             b2CreateBody(*self, def)
@@ -89,5 +95,7 @@ extern "C" {
     fn b2DefaultWorldDef() -> WorldDef;
 
     fn b2CreateWorld(def: &WorldDef) -> World;
+	fn b2World_Step(world: World, time_step: f32, substep_count: u32);
+
     fn b2CreateBody(world: World, def: &BodyDef) -> Body;
 }

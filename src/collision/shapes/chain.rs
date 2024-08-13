@@ -58,7 +58,11 @@ impl ChainShape {
     }
 }
 
-impl Shape for ChainShape {}
+impl Shape for ChainShape {
+    fn to_enum(&self) -> super::UnknownShape {
+        todo!();
+    }
+}
 
 #[doc(hidden)]
 pub mod ffi {

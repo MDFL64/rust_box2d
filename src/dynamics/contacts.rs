@@ -44,11 +44,7 @@ impl Contact {
     }
 
     pub fn fixture_a(&self) -> (BodyHandle, FixtureHandle) {
-        unsafe {
-            let fixture = ffi::Contact_get_fixture_a_const(self.ptr()) as *mut _;
-            let body_handle = WrappedRef::new(Fixture::from_ffi(fixture)).body();
-            (body_handle, fixture.handle())
-        }
+        panic!("fixture a");
     }
 
     pub fn child_index_a(&self) -> i32 {
@@ -56,11 +52,7 @@ impl Contact {
     }
 
     pub fn fixture_b(&self) -> (BodyHandle, FixtureHandle) {
-        unsafe {
-            let fixture = ffi::Contact_get_fixture_b_const(self.ptr()) as *mut _;
-            let body_handle = WrappedRef::new(Fixture::from_ffi(fixture)).body();
-            (body_handle, fixture.handle())
-        }
+        panic!("fixture b");
     }
 
     pub fn child_index_b(&self) -> i32 {

@@ -1,4 +1,4 @@
-use crate::{math::Vec2, common::Filter};
+use crate::{common::Filter, math::Vec2, PhantomNoSend};
 
 #[derive(Debug)]
 #[repr(C)]
@@ -46,6 +46,15 @@ pub struct ShapeDef {
     _cookie: u32
 }
 
+#[repr(C)]
+#[derive(Copy,Clone)]
+pub struct Shape {
+    index: u32,
+    world: u16,
+    revision: u16,
+    _thread_unsafe: PhantomNoSend
+}
+
 const MAX_POLYGON_VERTICES: usize = 8;
 
 ///	DO NOT fill this out manually. Use a constructor.
@@ -74,6 +83,10 @@ impl Default for ShapeDef {
             b2DefaultShapeDef()
         }
     }
+}
+
+impl Shape {
+    
 }
 
 impl Polygon {

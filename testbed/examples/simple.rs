@@ -6,10 +6,8 @@ use piston_window::*;
 use wrapped2d::b2;
 use wrapped2d::user_data::NoUserData;
 
-type World = b2::World<NoUserData>;
-
 fn main() {
-    let mut world = World::new(&b2::Vec2 { x: 0., y: -10. });
+    let mut world = b2::World::new(&b2::Vec2 { x: 0., y: -10. });
 
     let b_def = b2::BodyDef {
         body_type: b2::BodyType::Static,
@@ -61,7 +59,7 @@ fn main() {
         ..b2::FixtureDef::new()
     };
 
-    let process_input = |input: &Input, data: &mut testbed::Data<NoUserData>| {
+    let process_input = |input: &Input, data: &mut testbed::Data| {
         let mut create_body = |shape| {
             b_def.position.x += 0.5;
             if b_def.position.x > 20. {

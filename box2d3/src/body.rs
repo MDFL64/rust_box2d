@@ -1,4 +1,4 @@
-use crate::{math::{Rot, Vec2}, PhantomNoSend, World};
+use crate::{math::{Rot, Vec2}, shapes::Polygon, PhantomNoSend, Shape, ShapeDef, World};
 
 #[derive(Debug)]
 #[repr(C)]
@@ -98,6 +98,16 @@ impl Default for BodyDef {
     }
 }
 
+impl Body {
+	pub fn create_shape_polygon(&self, shape_def: &ShapeDef, polygon: &Polygon) -> Shape {
+		unsafe {
+			b2CreatePolygonShape(*self, shape_def, polygon)
+		}
+	}
+}
+
 extern "C" {
+	fn b2CreatePolygonShape(body: Body, shape_def: &ShapeDef, polygon: &Polygon) -> Shape;
+
     fn b2DefaultBodyDef() -> BodyDef;
 }

@@ -10,7 +10,7 @@ use wrap::*;
 
 #[derive(Debug)]
 pub struct PolygonShape {
-    inner: box2d3::shapes::Polygon
+    pub inner: box2d3::shapes::Polygon
 }
 
 impl PolygonShape {
@@ -63,5 +63,7 @@ impl PolygonShape {
 }
 
 impl Shape for PolygonShape {
-    
+    fn to_enum(&self) -> super::UnknownShape {
+        super::UnknownShape::Polygon(self)
+    }
 }

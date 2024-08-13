@@ -54,7 +54,11 @@ impl EdgeShape {
     }
 }
 
-impl Shape for EdgeShape {}
+impl Shape for EdgeShape {
+    fn to_enum(&self) -> super::UnknownShape {
+        todo!();
+    }
+}
 
 #[doc(hidden)]
 pub mod ffi {

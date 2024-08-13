@@ -1,7 +1,6 @@
 pub mod body;
 pub mod contacts;
 pub mod fixture;
-pub mod joints;
 pub mod world;
 
 #[repr(C)]

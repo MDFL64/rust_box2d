@@ -66,7 +66,11 @@ impl CircleShape {
     }
 }
 
-impl Shape for CircleShape {}
+impl Shape for CircleShape {
+    fn to_enum(&self) -> super::UnknownShape {
+        todo!();
+    }
+}
 
 #[doc(hidden)]
 pub mod ffi {

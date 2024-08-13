@@ -68,10 +68,6 @@ impl_raw_user_data! {
 }
 
 impl_raw_user_data! {
-    ffi::Joint, ffi::Joint_get_user_data, ffi::Joint_set_user_data
-}
-
-impl_raw_user_data! {
     ffi::Fixture, ffi::Fixture_get_user_data, ffi::Fixture_set_user_data
 }
 
@@ -88,7 +84,6 @@ pub trait UserData<U> {
 pub mod ffi {
     pub use dynamics::body::ffi::Body;
     pub use dynamics::fixture::ffi::Fixture;
-    pub use dynamics::joints::ffi::Joint;
     pub use ffi::Any;
 
     pub fn Body_get_user_data(slf: *const Body) -> Any {
@@ -101,12 +96,6 @@ pub mod ffi {
         todo!()
     }
     pub fn Fixture_set_user_data(slf: *mut Fixture, data: Any) {
-        todo!()
-    }
-    pub fn Joint_get_user_data(slf: *const Joint) -> Any {
-        todo!()
-    }
-    pub fn Joint_set_user_data(slf: *mut Joint, data: Any) {
         todo!()
     }
 }

@@ -51,14 +51,16 @@ pub trait Shape {
     fn base_ptr(&self) -> *const ffi::Shape {
         panic!("no base ptr");
     }
+
+    fn to_enum(&self) -> UnknownShape;
 }
 
-pub enum UnknownShape {
+pub enum UnknownShape<'a> {
     Unknown,
-    Circle(CircleShape),
-    Edge(EdgeShape),
-    Polygon(PolygonShape),
-    Chain(ChainShape),
+    Circle(&'a CircleShape),
+    Edge(&'a EdgeShape),
+    Polygon(&'a PolygonShape),
+    Chain(&'a ChainShape),
 }
 
 /*pub trait Shape: WrappedBase<ffi::Shape> {

@@ -56,42 +56,30 @@ impl FixtureDef {
     }
 }
 
-pub struct MetaFixture<U: UserDataTypes> {
+pub struct MetaFixture {
     fixture: Fixture,
-    user_data: Box<InternalUserData<Fixture, U::FixtureData>>,
 }
 
-impl<U: UserDataTypes> MetaFixture<U> {
+impl MetaFixture {
     #[doc(hidden)]
     pub unsafe fn new(
         ptr: *mut ffi::Fixture,
         handle: FixtureHandle,
-        custom: U::FixtureData,
     ) -> Self {
-        let mut f = MetaFixture {
+        /*let mut f = MetaFixture {
             fixture: Fixture::from_ffi(ptr),
             user_data: Box::new(InternalUserData {
                 //handle: handle,
                 handle: todo!(),
-                custom: custom,
             }),
         };
         f.mut_ptr().set_internal_user_data(&mut *f.user_data);
-        f
+        f*/
+        panic!("metafixture new");
     }
 }
 
-impl<U: UserDataTypes> UserData<U::FixtureData> for MetaFixture<U> {
-    fn user_data(&self) -> &U::FixtureData {
-        &self.user_data.custom
-    }
-
-    fn user_data_mut(&mut self) -> &mut U::FixtureData {
-        &mut self.user_data.custom
-    }
-}
-
-impl<U: UserDataTypes> Deref for MetaFixture<U> {
+impl Deref for MetaFixture {
     type Target = Fixture;
 
     fn deref(&self) -> &Fixture {
@@ -99,7 +87,7 @@ impl<U: UserDataTypes> Deref for MetaFixture<U> {
     }
 }
 
-impl<U: UserDataTypes> DerefMut for MetaFixture<U> {
+impl DerefMut for MetaFixture {
     fn deref_mut(&mut self) -> &mut Fixture {
         &mut self.fixture
     }
@@ -109,7 +97,7 @@ wrap! { ffi::Fixture => pub Fixture }
 
 impl Fixture {
     pub fn handle(&self) -> FixtureHandle {
-        unsafe { self.ptr().handle() }
+        panic!("handle!?!")
     }
 
     pub fn shape_type(&self) -> ShapeType {
