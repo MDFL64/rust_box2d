@@ -73,6 +73,7 @@ pub struct World {
 
 impl World {
     pub fn new(def: &WorldDef) -> Self {
+		println!("NEW = {}",def.worker_count);
         unsafe {
             b2CreateWorld(def)
         }

@@ -28,7 +28,9 @@ impl PolygonShape {
     }
 
     pub fn new_oriented_box(hw: f32, hh: f32, center: &Vec2, angle: f32) -> Self {
-        panic!()
+        Self {
+            inner: box2d3::shapes::Polygon::new_box_ex(hw,hh,*center,angle)
+        }
     }
 
     pub fn new_with(points: &[Vec2]) -> Self {

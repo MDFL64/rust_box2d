@@ -5,11 +5,9 @@ extern crate wrapped2d;
 use std::time::{Duration, Instant};
 
 use piston_window::*;
-use wrapped2d::b2;
+use wrapped2d::b2::{self, World};
 use wrapped2d::dynamics::world::BodyHandle;
 use wrapped2d::user_data::NoUserData;
-
-type World = b2::World<NoUserData>;
 
 const COUNT: usize = 2000;
 const SIZE: f32 = 30.0;
@@ -47,8 +45,6 @@ fn main() {
     }
 
     let cube_shape = b2::PolygonShape::new_box(0.5, 0.5);
-    let mut circle_shape = b2::CircleShape::new();
-    circle_shape.set_radius(1.);
 
     // make pyramid
     {
@@ -114,8 +110,8 @@ struct Tumbler {
     total_time: Duration,
 }
 
-impl testbed::Test<NoUserData> for Tumbler {
-    fn step(&mut self, data: &mut testbed::Data<NoUserData>, dt: f32) {
+impl testbed::Test for Tumbler {
+    fn step(&mut self, data: &mut testbed::Data, dt: f32) {
         let t = Instant::now();
         testbed::step(data, dt);
         self.total_time += t.elapsed();

@@ -103,10 +103,18 @@ impl Body {
 			b2CreatePolygonShape(*self, shape_def, polygon)
 		}
 	}
+
+	pub fn set_angular_velocity(&self, ang_vel: f32) {
+		unsafe {
+			b2Body_SetAngularVelocity(*self, ang_vel);
+		}
+	}
 }
 
 extern "C" {
 	fn b2CreatePolygonShape(body: Body, shape_def: &ShapeDef, polygon: &Polygon) -> Shape;
+
+	fn b2Body_SetAngularVelocity(body: Body, ang_vel: f32);
 
     fn b2DefaultBodyDef() -> BodyDef;
 }

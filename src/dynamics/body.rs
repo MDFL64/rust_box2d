@@ -114,6 +114,10 @@ impl MetaBody {
 
         self.create_fixture_with(shape, &mut def)
     }
+
+    pub fn set_angular_velocity(&mut self, v: f32) {
+        self.body.set_angular_velocity(v);
+    }
 }
 /*
 impl Body {
@@ -249,10 +253,6 @@ impl Body {
 
     pub fn set_linear_velocity(&mut self, v: &Vec2) {
         unsafe { ffi::Body_set_linear_velocity(self.mut_ptr(), v) }
-    }
-
-    pub fn set_angular_velocity(&mut self, v: f32) {
-        unsafe { ffi::Body_set_angular_velocity(self.mut_ptr(), v) }
     }
 
     pub fn apply_force(&mut self, force: &Vec2, point: &Vec2, wake: bool) {

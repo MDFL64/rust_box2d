@@ -33,6 +33,7 @@ impl World {
     pub fn new(gravity: &Vec2) -> Self {
         let mut def = box2d3::WorldDef::default();
         def.gravity = *gravity;
+        def.worker_count = 10;
         let handle = box2d3::World::new(&def);
         World {
             handle,

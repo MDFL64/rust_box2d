@@ -86,7 +86,7 @@ impl Default for ShapeDef {
 }
 
 impl Shape {
-    
+
 }
 
 impl Polygon {
@@ -95,10 +95,17 @@ impl Polygon {
             b2MakeBox(hx,hy)
         }
     }
+
+    pub fn new_box_ex(hx: f32, hy: f32, center: Vec2, angle: f32) -> Self {
+        unsafe {
+            b2MakeOffsetBox(hx,hy,center,angle)
+        }
+    }
 }
 
 extern "C" {
     fn b2DefaultShapeDef() -> ShapeDef;
 
     fn b2MakeBox(hx: f32, hy: f32) -> Polygon;
+    fn b2MakeOffsetBox(hx: f32, hy: f32, center: Vec2, angle: f32) -> Polygon;
 }
