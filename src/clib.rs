@@ -6,15 +6,22 @@ extern "C" fn assert(x: i32) {
     }
 }*/
 
+const STATIC_ALIGN: i32 = 16;
+
 #[no_mangle]
 unsafe extern "C" fn malloc(size: i32) -> i32 {
-    let layout = std::alloc::Layout::from_size_align_unchecked(size as usize,0);
-    return std::alloc::alloc_zeroed( layout ) as i32;
+    let size = size + STATIC_ALIGN;
+    let layout = std::alloc::Layout::from_size_align_unchecked(size as usize,STATIC_ALIGN as usize);
+    let ptr = std::alloc::alloc( layout ) as i32;
+    (ptr as *mut i32).write(size);
+    ptr + STATIC_ALIGN
 }
 
 #[no_mangle]
 unsafe extern "C" fn free(ptr: i32) {
-    let layout = std::alloc::Layout::from_size_align_unchecked(0,0);
+    let ptr = ptr - STATIC_ALIGN;
+    let size = (ptr as *mut i32).read();
+    let layout = std::alloc::Layout::from_size_align_unchecked(size as usize,STATIC_ALIGN as usize);
     std::alloc::dealloc(ptr as *mut u8, layout);
 }
 
