@@ -36,6 +36,11 @@ unsafe extern "C" fn _ZdlPv(addr: i32) {
 }
 
 #[no_mangle]
+unsafe extern "C" fn _ZdlPvm(addr: i32, size: i32) {
+    free(addr);
+}
+
+#[no_mangle]
 extern "C" fn __cxa_pure_virtual() {
     panic!("pure virtual call");
 }
